@@ -21,3 +21,7 @@ export const isJson = (data: any) => {
     }
     return true;
 };
+
+export const classNames = (...classes: any) => {
+    return classes.filter(Boolean).join(" ");
+};

@@ -8,6 +8,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { ThemeContext } from '../../pages/_app'
 import { classNames } from '../../utils/helper'
+import { FieldTimeOutlined, LoginOutlined } from '@ant-design/icons'
 
 type Nav = {
     id: number;
@@ -17,7 +18,7 @@ type Nav = {
 }
 
 const navigation: Nav[] = [
-    { id: 1, name: 'Order', href: '/', current: true },
+    { id: 1, name: 'Order', href: '/', current: true     },
     { id: 2, name: 'News', href: '/service', current: false },
     { id: 3, name: 'Store', href: '/about', current: false },
     { id: 4, name: 'Voucher', href: '/signin', current: false },
@@ -128,11 +129,11 @@ export default function Header() {
                                     {/* Profile dropdown */}
                                     <Menu as="div" className="ml-3 relative">
                                         <div>
-                                            <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                                            <Menu.Button className="flex text-sm rounded-full">
                                                 <span className="sr-only">Open user menu</span>
                                                 <img
                                                     className="h-8 w-8 rounded-full"
-                                                    src="https://console-skyview-dev.s3.amazonaws.com/organization_new/profile/62b97283c93f00cc0fcec799_1657161976.jpg"
+                                                    src="https://order.thecoffeehouse.com/_nuxt/img/Login.70dc3d8.png"
                                                     alt=""
                                                 />
                                             </Menu.Button>
@@ -149,37 +150,38 @@ export default function Header() {
                                             <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[1]">
                                                 <Menu.Item>
                                                     {({ active }: any) => (
-                                                        <a
-                                                            href="#"
-                                                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                                                        <div
+                                                        className={classNames(active ? 'bg-gray-100' : '', 'flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer')}
                                                         >
-                                                            Your Profile
-                                                        </a>
+                                                            <FieldTimeOutlined className="mr-2" />
+                                                            <span>Order Lookup</span>
+                                                        </div>
                                                     )}
                                                 </Menu.Item>
                                                 <Menu.Item>
                                                     {({ active }: any) => (
-                                                        <a
-                                                            href="#"
-                                                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                                                        <div
+                                                        className={classNames(active ? 'bg-gray-100' : '', 'flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer')}
                                                         >
-                                                            Settings
-                                                        </a>
-                                                    )}
-                                                </Menu.Item>
-                                                <Menu.Item>
-                                                    {({ active }: any) => (
-                                                        <a
-                                                            href="#"
-                                                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
-                                                        >
-                                                            Sign out
-                                                        </a>
+                                                            <LoginOutlined className="mr-2" />
+                                                            <span>Sign In</span>
+                                                        </div>
                                                     )}
                                                 </Menu.Item>
                                             </Menu.Items>
                                         </Transition>
                                     </Menu>
+                                    <div className="flex text-sm rounded-full cursor-pointer" style={{ marginTop: "5px"}}>
+                                        <img
+                                            className="h-8 w-8 rounded-full"
+                                            src="https://order.thecoffeehouse.com/_nuxt/img/Carticon.373916c.png"
+                                            alt=""
+                                            style={{
+                                                height: "58px",
+                                                width: "58px",
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
