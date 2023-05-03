@@ -18,6 +18,10 @@ const authSlice = createSlice({
         logOut: (state) => {
             state.user = null;
             state.token = null;
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("currentUser");
+                localStorage.removeItem("accessToken");
+            }
         },
     },
 });
@@ -27,4 +31,5 @@ export const { setCredentials, logOut } = authSlice.actions;
 export default authSlice.reducer;
 
 export const selectCurrentUser = (state: any): IUser | null => state.auth.user;
-export const selectCurrentToken = (state: any): IUser | null => state.auth.token;
+export const selectCurrentToken = (state: any): IUser | null =>
+    state.auth.token;

@@ -25,3 +25,5 @@ export const isJson = (data: any) => {
 export const classNames = (...classes: any) => {
     return classes.filter(Boolean).join(" ");
 };
+
+export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));

@@ -1,14 +1,17 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useEffect, useState, useContext, useRef } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
-import { PaperClipIcon } from '@heroicons/react/solid'
-import Link from 'next/link'
-import Head from 'next/head'
-import { useRouter } from 'next/router'
-import { ThemeContext } from '../../pages/_app'
-import { classNames } from '../../utils/helper'
-import { FieldTimeOutlined, LoginOutlined } from '@ant-design/icons'
+import { Fragment, useEffect, useState, useContext } from "react";
+import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { MenuIcon, XIcon } from "@heroicons/react/outline";
+import Link from "next/link";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { classNames } from "../../utils/helper";
+import { FieldTimeOutlined, LoginOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { selectCurrentUser, logOut } from "../../auth/authSlice";
+import { useSelector } from "react-redux";
+import { isEmpty } from "lodash";
+import { store } from "../../app/store";
+
 
 type Nav = {
     id: number;
@@ -18,35 +21,36 @@ type Nav = {
 }
 
 const navigation: Nav[] = [
-    { id: 1, name: 'Order', href: '/', current: true     },
-    { id: 2, name: 'News', href: '/service', current: false },
-    { id: 3, name: 'Store', href: '/about', current: false },
-    { id: 4, name: 'Voucher', href: '/signin', current: false },
-    { id: 5, name: 'Career', href: '/signup', current: false },
+    { id: 1, name: "Order", href: "/", current: true },
+    { id: 2, name: "News", href: "/service", current: false },
+    { id: 3, name: "Store", href: "/about", current: false },
+    { id: 4, name: "Voucher", href: "/sign-in", current: false },
+    { id: 5, name: "Career", href: "/signup", current: false },
 ]
 
 function checkActiveNavbar(isActive: boolean, theme: any) {
-    if (isActive && theme === 'dark') {
-        return 'bg-slate-800 text-zinc-900 rounded-2xl'
-    } else if (isActive && theme === '') {
-        return 'bg-white text-zinc-900 rounded-2xl'
+    if (isActive && theme === "dark") {
+        return "bg-slate-800 text-zinc-900 rounded-2xl"
+    } else if (isActive && theme === "") {
+        return "bg-white text-zinc-900 rounded-2xl"
     }
-    return 'text-zinc-900 hover:text-gray-400'
+    return "text-zinc-900 hover:text-gray-400"
 }
 
 function checkActiveNavMobile(isActive: boolean, theme: any) {
-    if (isActive && theme === 'dark') {
-        return 'bg-slate-800 text-zinc-900'
-    } else if (isActive && theme === '') {
-        return 'bg-white text-zinc-900'
+    if (isActive && theme === "dark") {
+        return "bg-slate-800 text-zinc-900"
+    } else if (isActive && theme === "") {
+        return "bg-white text-zinc-900"
     }
-    return 'text-zinc-900 hover:text-gray-400'
+    return "text-zinc-900 hover:text-gray-400"
 }
 
 
 export default function Header() {
-    const [nav, setNav] = useState(navigation)
-    const [theme, handleTheme]: any = useContext(ThemeContext)
+    const [nav, setNav] = useState(navigation);
+    const currentUser = useSelector(selectCurrentUser);
+    console.log(currentUser);
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
             if (index === i) {
@@ -58,15 +62,20 @@ export default function Header() {
         setNav(stateNew)
     }
     const router = useRouter();
-    const route = useRef(router.route);
     useEffect(() => {
         const navNew: any = navigation.map(item => {
-            if (route.current === item.href) item.current = true
+            if (router.route === item.href) item.current = true
             else item.current = false
             return item
         })
         setNav(navNew)
-    }, [route.current])
+    }, [router.route])
+
+    const handleSignOut = () => {
+        store.dispatch(logOut());
+        window.location.reload();
+    }
+
     return (
         <>
             <Head>
@@ -93,15 +102,16 @@ export default function Header() {
                                         )}
                                     </Disclosure.Button>
                                 </div>
-                                <div className="flex-custom flex items-center justify-center sm:items-stretch sm:justify-start">
-                                    <div className="flex-shrink-0 flex items-center">
+                                <div className="flex-custom flex items-center justify-center sm:items-stretch sm:justify-start cursor-pointer">
+                                    <Link  href="/"
+                                        className="flex-shrink-0 flex items-center"
+                                    >
                                         <img
                                             className="hidden lg:block h-8 w-64"
                                             src="https://order.thecoffeehouse.com/_nuxt/img/logo.174bdfd.svg"
                                             alt="The Coffee House"
                                         />
-
-                                    </div>
+                                    </Link>
                                 </div>
                                 <div className="hidden sm:block sm:ml-6 bg-nav">
                                     <div className="flex space-x-4 h-10 p-1">
@@ -112,10 +122,10 @@ export default function Header() {
                                                     href={item.href}
                                                     onClick={() => handleSwitchPage(index)}
                                                     className={classNames(
-                                                        checkActiveNavbar(item.current, theme),
-                                                        'px-3 pt-1 text-sm font-medium', item.current || 'false'
+                                                        checkActiveNavbar(item.current, ""),
+                                                        "px-3 pt-1 text-sm font-medium", item.current || "false"
                                                     )}
-                                                    aria-current={item.current ? 'page' : undefined}
+                                                    aria-current={item.current ? "page" : undefined}
                                                 >
                                                     {item.name}
                                                 </a>
@@ -148,26 +158,66 @@ export default function Header() {
                                             leaveTo="transform opacity-0 scale-95"
                                         >
                                             <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[1]">
-                                                <Menu.Item>
-                                                    {({ active }: any) => (
-                                                        <div
-                                                        className={classNames(active ? 'bg-gray-100' : '', 'flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer')}
-                                                        >
-                                                            <FieldTimeOutlined className="mr-2" />
-                                                            <span>Order Lookup</span>
-                                                        </div>
-                                                    )}
-                                                </Menu.Item>
-                                                <Menu.Item>
-                                                    {({ active }: any) => (
-                                                        <div
-                                                        className={classNames(active ? 'bg-gray-100' : '', 'flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer')}
-                                                        >
-                                                            <LoginOutlined className="mr-2" />
-                                                            <span>Sign In</span>
-                                                        </div>
-                                                    )}
-                                                </Menu.Item>
+                                                {
+                                                    !isEmpty(currentUser) ?
+                                                    <>
+                                                        <Menu.Item>
+                                                            {({ active }: any) => (
+                                                                <div
+                                                                className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
+                                                                >
+                                                                    <UserOutlined className="mr-2" />
+                                                                    <span>{`${currentUser.firstName} ${currentUser.lastName}`}</span>
+                                                                </div>
+                                                            )}
+                                                        </Menu.Item> 
+                                                        <Menu.Item>
+                                                            {({ active }: any) => (
+                                                                <div
+                                                                className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
+                                                                >
+                                                                    <FieldTimeOutlined className="mr-2" />
+                                                                    <span>Order Lookup</span>
+                                                                </div>
+                                                            )}
+                                                        </Menu.Item> 
+                                                        <Menu.Item>
+                                                        {({ active }: any) => (
+                                                                <div 
+                                                                className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
+                                                                onClick={handleSignOut}
+                                                                >
+                                                                    <LogoutOutlined className="mr-2" />
+                                                                    <span>Sign Out</span>
+                                                                </div>
+                                                        )}
+                                                        </Menu.Item>
+                                                    </>
+                                                    :
+                                                    <>
+                                                        <Menu.Item>
+                                                            {({ active }: any) => (
+                                                                <div
+                                                                className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
+                                                                >
+                                                                    <FieldTimeOutlined className="mr-2" />
+                                                                    <span>Order Lookup</span>
+                                                                </div>
+                                                            )}
+                                                        </Menu.Item> 
+                                                        <Menu.Item>
+                                                            {({ active }: any) => (
+                                                                    <div 
+                                                                    className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
+                                                                    onClick={() => { router.push("sign-in") }}
+                                                                    >
+                                                                        <LoginOutlined className="mr-2" />
+                                                                        <span>Sign In</span>
+                                                                    </div>
+                                                            )}
+                                                        </Menu.Item>
+                                                    </>
+                                                }
                                             </Menu.Items>
                                         </Transition>
                                     </Menu>
@@ -195,10 +245,10 @@ export default function Header() {
                                             as="a"
                                             href={item.href}
                                             className={classNames(
-                                                checkActiveNavMobile(item.current, theme),
-                                                'block px-3 py-2 rounded-md text-base font-medium'
+                                                checkActiveNavMobile(item.current, ""),
+                                                "block px-3 py-2 rounded-md text-base font-medium"
                                             )}
-                                            aria-current={item.current ? 'page' : undefined}
+                                            aria-current={item.current ? "page" : undefined}
                                         >
                                             {item.name}
                                         </Disclosure.Button>

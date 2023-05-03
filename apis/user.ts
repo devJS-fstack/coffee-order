@@ -6,19 +6,19 @@ const basePathUser = "users";
 
 export type IUser = {
     email?: string;
-    username?: string;
     password?: string;
-    typeLogin?: string;
-    fullName?: string;
+    firstName?: string;
+    lastName?: string;
     accessToken?: string;
-    imgUrl?: string;
+    phoneNumber?: string;
+    prefixPhone?: string;
 };
 
 export const authApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         login: builder.mutation({
             query: (credentials) => ({
-                url: `${basePathUser}/login`,
+                url: `${basePathUser}/sign-in`,
                 method: "POST",
                 body: { ...credentials },
             }),
@@ -43,7 +43,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         }),
         regis: builder.mutation({
             query: (credentials) => ({
-                url: `${basePathUser}/register`,
+                url: `${basePathUser}/sign-up`,
                 method: "POST",
                 body: { ...credentials },
             }),
