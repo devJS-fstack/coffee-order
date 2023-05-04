@@ -470,3 +470,188 @@
     font-size: var(--space-14);
     line-height: var(--space-22);
 }
+
+.tch-delivery-card .icon, .tch-order-card__right .icon {
+    font-size: var(--space-24);
+    line-height: 1;
+    padding-left: var(--space-30);
+}
+
+.tch-delivery-card--border:after {
+    width: calc(100% - 56px);
+}
+
+.tch-delivery-card--border:after, .tch-order-card--border:after {
+    position: absolute;
+    bottom: -1px;
+    right: 0;
+    content: "";
+    height: 1px;
+    background-color: #c4c4c4;
+    opacity: .3;
+}
+
+.tch-order-card--border:after {
+    width: 100%;
+}
+
+.tch-list-payment-method .tch-payment-method-item {
+    padding: var(--space-16) 0;
+    border-bottom: 1px solid #c4c4c4;
+}
+
+.custom-control {
+    position: relative;
+    z-index: 1;
+    display: block;
+    min-height: 1.5rem;
+    padding-left: 1.5rem;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+.custom-control-input,
+.custom-control-label.tch-custom-radio:before {
+    width: var(--space-24);
+    height: var(--space-24);
+}
+
+.custom-control-input {
+
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    opacity: 0;
+}
+
+.custom-control-label {
+    position: relative;
+    margin-bottom: 0;
+    vertical-align: top;
+}
+
+.custom-control-label {
+    position: relative;
+    margin-bottom: 0;
+    vertical-align: top;
+}
+
+.custom-control-label:before {
+    pointer-events: none;
+    background-color: #fff;
+    border: 1px solid #adb5bd;
+}
+
+
+.custom-control-label:before, .custom-file-label, .custom-select {
+    transition: background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.custom-control-label:after, .custom-control-label:before {
+    position: absolute;
+    top: 0.25rem;
+    left: -1.5rem;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    content: "";
+}
+.custom-radio .custom-control-label:before {
+    border-radius: 50%;
+}
+
+.custom-radio .custom-control-label:before {
+    border-radius: 100%;
+}
+
+.custom-control-label.tch-custom-radio:before {
+    top: 0;
+    border: 3px solid #e4e4e4;
+}
+
+.custom-control-input:checked~.custom-control-label:before {
+    color: #fff;
+    border-color: #007bff;
+    background-color: #007bff;
+}
+
+.custom-control-input:checked~.custom-control-label.tch-custom-radio:before {
+    color: var(--white);
+    border-color: var(--orange-2);
+    background-color: var(--white);
+}
+
+.tch-payment-method-item img {
+    -o-object-fit: cover;
+    object-fit: cover;
+    width: var(--space-24);
+    height: var(--space-16);
+}
+
+.tch-payment-method-item .custom-control-label .text {
+    font-size: var(--space-16);
+    line-height: var(--space24);
+    color: var(--black-3);
+}
+
+.tch-list-payment-method .tch-payment-method-item .custom-control-label .icon {
+    width: var(--space-24);
+    height: var(--space-16);
+}
+
+.custom-control-label:after {
+    background: 50%/50% 50% no-repeat;
+}
+
+.custom-control-label.tch-custom-radio:after {
+    top: 7px;
+    left: -17px;
+    width: var(--space-10);
+    height: var(--space-10);
+}
+
+.custom-radio .custom-control-input:checked~.custom-control-label.tch-custom-radio:after {
+    background-image: unset;
+    background-color: var(--orange-2);
+    border-radius: 100%;
+}
+
+.tch-list-payment-method .tch-payment-method-item:last-child {
+    border: 0;
+}
+
+.ptl-20 {
+    padding: 0 var(--space-20);
+}
+
+.tch-checkout-box__btn-outline {
+    padding: 7px var(--space-12);
+    background: var(--white);
+    font-size: var(--space-12);
+    line-height: var(--space-22);
+    border: 1px solid #262626;
+    border-radius: var(--space-100);
+    cursor: pointer;
+}
+
+.tch-checkout-box.tch-checkout-box--list-total {
+    padding-bottom: var(--space-70);
+}
+
+.tch-order-card {
+    min-height: var(--space-56);
+}
+
+.tch-order-card__left .tch-order-card__icon {
+    font-size: var(--space-16);
+    line-height: 1;
+    color: var(--orange-2);
+}
+
+.tch-order-card .tch-order-card__content {
+    padding-left: var(--space-18);
+}
+
+.mb--12 {
+    margin-bottom: var(--space-12);
+}

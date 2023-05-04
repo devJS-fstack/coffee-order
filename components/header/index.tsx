@@ -50,7 +50,7 @@ function checkActiveNavMobile(isActive: boolean, theme: any) {
 export default function Header() {
     const [nav, setNav] = useState(navigation);
     const currentUser = useSelector(selectCurrentUser);
-    console.log(currentUser);
+    console.log("currentUser: ", currentUser);
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
             if (index === i) {

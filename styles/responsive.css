@@ -108,6 +108,24 @@
     .float-lg-left {
         float: left!important;
     }
+
+    .float-lg-right {
+        float: right!important;
+    }
+
+    .d-lg-block {
+        display: block!important;
+    }
+
+    .tch-checkout-box--lg-shadowbox {
+        padding: 0;
+        box-shadow: 0 -4px 10px rgba(0,0,0,.12);
+        border-radius: var(--space-8);
+    }
+
+    .tch-checkout-box.tch-checkout-box--list-total {
+        padding-bottom: var(--space-30);
+    }
 }
 
 @media (max-width:540px) {
