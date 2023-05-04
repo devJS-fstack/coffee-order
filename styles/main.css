@@ -655,3 +655,23 @@
 .mb--12 {
     margin-bottom: var(--space-12);
 }
+
+.tch-order-card .tch-order-card__text.orange, .tch-order-card__right .icon.orange {
+    color: var(--orange-2);
+}
+
+.tch-checkout-box.tch-checkout-box--list-submited {
+    position: fixed;
+    left: 0;
+    bottom: var(--space-70);
+    padding: var(--space-16) 15px;
+    background: var(--radial-gradient-orange-9);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    z-index: 999;
+}
+
+.tch-checkout-box__text {
+    color: var(--orange-2);
+    font-size: var(--space-16);
+    line-height: var(--space-24);
+}

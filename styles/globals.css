@@ -42,3 +42,7 @@ svg {
 .ant-message {
     top: 90px !important;
 }
+
+.position-static {
+    position: static!important;
+}

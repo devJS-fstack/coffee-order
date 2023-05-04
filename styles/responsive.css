@@ -126,11 +126,26 @@
     .tch-checkout-box.tch-checkout-box--list-total {
         padding-bottom: var(--space-30);
     }
+
+    .tch-checkout-box--lg-shadowbox 
+    .tch-checkout-box.tch-checkout-box.tch-checkout-box--list-submited {
+        border-bottom-left-radius: var(--space-8);
+        border-bottom-right-radius: var(--space-8);
+    }
 }
 
 @media (max-width:540px) {
     .flex-custom {
         flex: 1 1 0%;
+    }
+
+    .tch-checkout-box.tch-checkout-box--list-submited {
+        position: fixed !important;
+        bottom: 0 !important;
+    }
+
+    .container-fluid {
+        padding: 28px !important;
     }
 }
 

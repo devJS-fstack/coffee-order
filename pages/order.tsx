@@ -1,5 +1,5 @@
 
-import { Form, Input, Radio, Space, message } from "antd";
+import { Form, Input, Button } from "antd";
 import { DeleteFilled } from "@ant-design/icons"
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
@@ -188,9 +188,49 @@ export default function LoginComponent() {
                                                         <p className="tch-order-card__price mb-0 mr-4">5$</p>    
                                                     </div>
                                             </div>
+                                            <div className="
+                                                    tch-order-card tch-order-card--border
+                                                    flex
+                                                    items-center
+                                                    justify-between
+                                                ">
+                                                    <div className="tch-order-card__left flex">
+                                                        <p className="tch-order-card__text orange mb-0 font-medium">Voucher Discount</p>
+                                                    </div>
+                                                    <div className="tch-order-card__right">
+                                                        <p className="tch-order-card__price mb-0 mr-4">-15$</p>    
+                                                    </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                <div className="
+                                        tch-checkout-box tch-checkout-box--list-submited
+                                        flex
+                                        justify-between
+                                        items-center
+                                        w-full
+                                        position-static
+                                    ">
+                                        <div>
+                                            <p className="tch-order-card__text text-white mb-0">Total</p>
+                                            <p className="tch-order-card__text text-white font-medium mb-0">80$</p>
+                                        </div>
+                                        <Button className="font-medium" type="primary" shape="round" size="middle" style={{
+                                            backgroundColor: "white",
+                                            color: "var(--orange-2)",
+                                        }}>Place Order</Button>
+                                </div>
+                            </div>
+                            <div className="
+                                    tch-checkout-box tch-checkout-box--remove-card float-lg-right
+                                ">
+                                    <div className="tch-checkout-box__text text-center mb-0">
+                                        <DeleteFilled style={{
+                                                    color: "#F87171"
+                                                }} className="mr-2 cursor-pointer text-base"/>
+                                        <span className="font-medium cursor-pointer text-base">Remove your order</span>
+                                    </div>
                             </div>
                         </div>
                     </div>
