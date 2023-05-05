@@ -46,3 +46,11 @@ svg {
 .position-static {
     position: static!important;
 }
+
+[type='search']:focus {
+    box-shadow: none;
+}
+
+[type='button'] {
+    background-color: #1677ff;
+}

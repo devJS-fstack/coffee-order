@@ -35,7 +35,7 @@ export const baseQuery = fetchBaseQuery({
 export const baseQueryReAuth = async (
     args: string | FetchArgs,
     api: BaseQueryApi,
-    extraOptions = {}
+    extraOptions = {},
 ) => {
     let result = await baseQuery(args, api, extraOptions);
     if (result?.error?.status === HTTP_STATUS_CODES.FORBIDDEN) {
@@ -43,7 +43,7 @@ export const baseQueryReAuth = async (
         const refreshResult = await baseQuery(
             "/refresh-token",
             api,
-            extraOptions
+            extraOptions,
         );
         if (refreshResult?.data) {
             const getCustomState = api.getState as any;

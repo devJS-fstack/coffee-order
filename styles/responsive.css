@@ -138,15 +138,6 @@
     .flex-custom {
         flex: 1 1 0%;
     }
-
-    .tch-checkout-box.tch-checkout-box--list-submited {
-        position: fixed !important;
-        bottom: 0 !important;
-    }
-
-    .container-fluid {
-        padding: 28px !important;
-    }
 }
 
 @media (min-width: 1052px)
@@ -196,5 +187,14 @@
     .tch-product__card .tch-product__content.tch-product__content--mobile-padding {
         padding-left: var(--space-16);
         padding-top: 0;
+    }
+
+    .tch-checkout-box.tch-checkout-box--list-submited {
+        position: fixed !important;
+        bottom: 0 !important;
+    }
+
+    .container-fluid {
+        padding: 28px !important;
     }
 }

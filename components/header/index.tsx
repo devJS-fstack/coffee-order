@@ -139,7 +139,7 @@ export default function Header() {
                                     {/* Profile dropdown */}
                                     <Menu as="div" className="ml-3 relative">
                                         <div>
-                                            <Menu.Button className="flex text-sm rounded-full">
+                                            <Menu.Button style={{ backgroundColor: "transparent" }} className="flex text-sm rounded-full">
                                                 <span className="sr-only">Open user menu</span>
                                                 <img
                                                     className="h-8 w-8 rounded-full"

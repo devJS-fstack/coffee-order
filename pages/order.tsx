@@ -4,10 +4,22 @@ import { DeleteFilled } from "@ant-design/icons"
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import { BsFillFileEarmarkFill, BsChevronRight, BsPencilFill } from "react-icons/bs";
+import AddressModal from "../components/AddressModal";
+import DeliveryTImeModal from "../components/DeliveryTimeModal";
+import { useState } from "react";
 
 
 export default function LoginComponent() {
     const [form] = Form.useForm();
+    const [isOpenAddress, setIsOpenAddress] = useState(false);
+    const [isOpenDelivery, setIsOpenDelivery] = useState(false);
+
+    const [deliveryInfo, setDeliveryInfo] = useState({
+        titleAddress: "",
+        fullAddress: "",
+        date: "",
+        time: "",
+    });
 
     return (
         <>
@@ -23,6 +35,8 @@ export default function LoginComponent() {
                 pauseOnHover
                 theme="light"
             />
+            <AddressModal isOpen={isOpenAddress} setIsOpen={setIsOpenAddress} setAddress={setDeliveryInfo}/>
+            <DeliveryTImeModal isOpen={isOpenDelivery} setIsOpen={setIsOpenDelivery} setDeliveryInfo={setDeliveryInfo}/>
             <div className="container-lg container-fluid custom-checkout">
                 <div className="row justify-center">
                     <div className="col-12 col-lg-10">
@@ -43,15 +57,15 @@ export default function LoginComponent() {
                                 <div className="tch-checkout-custom-mobile flex justify-between">
                                     <h4 className="tch-checkout-box__title">Delivery Information</h4>
                                 </div>
-                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border">
+                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border" onClick={() => setIsOpenAddress(true)}>
                                     <div className="tch-delivery-card__image">
                                         <img width={40} src="https://minio.thecoffeehouse.com/images/tch-web-order/Delivery2.png"/>
                                     </div>
                                     <div className="flex justify-between items-start tch-delivery-card__content">
                                         <div>
-                                            <h5 className="tch-delivery-card__title mb-0">14/1c Đường Số 359</h5>
+                                            <h5 className="tch-delivery-card__title mb-0">{deliveryInfo.titleAddress || "Please choose your address information"}</h5>
                                             <p className="tch-delivery-card__description mb-0">
-                                            14/1c Đường Số 359, Phước Long B, Quận 9, Thành phố Hồ Chí Minh, Việt Nam
+                                                {deliveryInfo.fullAddress}
                                             </p>
                                         </div>
                                         <span className="icon mt-2">
@@ -59,15 +73,15 @@ export default function LoginComponent() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border">
+                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border" onClick={() => setIsOpenDelivery(true)}>
                                     <div className="tch-delivery-card__image">
                                         <img width={40} src="https://img.freepik.com/free-vector/man-holding-clock-time-management-concept_23-2148823171.jpg?w=826&t=st=1683185468~exp=1683186068~hmac=c2cb79e2c96b57a8f893607c59d97de3ae2b610451961b251ec125390ceb5da3"/>
                                     </div>
                                     <div className="flex justify-between items-start tch-delivery-card__content">
                                         <div>
-                                            <h5 className="tch-delivery-card__title mb-0">Nhận hàng trong ngày 15-30 phút</h5>
+                                            <h5 className="tch-delivery-card__title mb-0">{deliveryInfo.date || "Please choose the planned received date"}</h5>
                                             <p className="tch-delivery-card__description mb-0">
-                                            Vào lúc: 15:15
+                                                {deliveryInfo.time}
                                             </p>
                                         </div>
                                         <span className="icon mt-2">
