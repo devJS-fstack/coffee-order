@@ -54,3 +54,7 @@ svg {
 [type='button'] {
     background-color: #1677ff;
 }
+
+.ant-spin-dot-item {
+    background-color: #ff792c !important;
+}

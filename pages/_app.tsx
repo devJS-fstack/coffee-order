@@ -15,7 +15,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       store.subscribe(() => {
-          console.log("Subscribe");
           const { auth } = store.getState();
           const user = get(auth, "user");
           const accessToken = get(auth, "token") || "";

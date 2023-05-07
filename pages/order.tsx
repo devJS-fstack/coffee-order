@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { BsFillFileEarmarkFill, BsChevronRight, BsPencilFill } from "react-icons/bs";
 import AddressModal from "../components/AddressModal";
 import DeliveryTImeModal from "../components/DeliveryTimeModal";
+import AddProductModal from "../components/AddProductModal";
 import { useState } from "react";
 
 
@@ -13,6 +14,8 @@ export default function LoginComponent() {
     const [form] = Form.useForm();
     const [isOpenAddress, setIsOpenAddress] = useState(false);
     const [isOpenDelivery, setIsOpenDelivery] = useState(false);
+    const [isOpenAddProduct, setIsOpenAddProduct] = useState(false);
+
 
     const [deliveryInfo, setDeliveryInfo] = useState({
         titleAddress: "",
@@ -37,6 +40,7 @@ export default function LoginComponent() {
             />
             <AddressModal isOpen={isOpenAddress} setIsOpen={setIsOpenAddress} setAddress={setDeliveryInfo}/>
             <DeliveryTImeModal isOpen={isOpenDelivery} setIsOpen={setIsOpenDelivery} setDeliveryInfo={setDeliveryInfo}/>
+            <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} setDeliveryInfo={setDeliveryInfo}/>
             <div className="container-lg container-fluid custom-checkout">
                 <div className="row justify-center">
                     <div className="col-12 col-lg-10">
@@ -124,7 +128,7 @@ export default function LoginComponent() {
                                 <ul className="tch-list-payment-method mb-0 list-none">
                                     <li className="tch-payment-method-item">
                                         <div className="custom-control custom-radio mb-0">
-                                            <input type="radio" name="payment-method" className="custom-control-input cursor-pointer" id="COD"/>
+                                            <input defaultChecked type="radio" name="payment-method" className="custom-control-input cursor-pointer" id="COD"/>
                                             <label htmlFor="COD" className="custom-control-label tch-custom-radio cursor-pointer inline-block" style={{ paddingLeft: 6 }}>
                                                 <span className="icon ml-3 mr-2">
                                                     <img className="inline-block" src="https://minio.thecoffeehouse.com/image/tchmobileapp/1000_photo_2021-04-06_11-17-08.jpg" />
@@ -157,7 +161,7 @@ export default function LoginComponent() {
                                         </div>
                                         <div className="tch-order-card flex items-center justify-between">
                                             <div className="tch-order-card__left flex">
-                                                <span className="tch-order-card__icon flex items-center">
+                                                <span className="tch-order-card__icon flex items-center cursor-pointer" onClick={() => { setIsOpenAddProduct(true) }}>
                                                     <BsPencilFill/>
                                                 </span>
                                                 <div className="tch-order-card__content">

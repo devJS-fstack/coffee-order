@@ -1,0 +1,13 @@
+.right-cols {
+    background: var(--white);
+    transform: translateY(-20px);
+    border-radius: 8px;
+    box-shadow: 0 -4px 10px rgba(0,0,0,.12);
+}
+
+.card-product-description {
+    font-weight: 400;
+    font-size: var(--space-16);
+    line-height: var(--space-22);
+    color: var(--black-2);
+}

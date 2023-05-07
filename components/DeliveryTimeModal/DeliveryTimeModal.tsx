@@ -14,8 +14,9 @@ const DeliveryTimeModal = ({
     setIsOpen: Dispatch<SetStateAction<boolean>>,
     setDeliveryInfo: Dispatch<SetStateAction<IDeliveryInfo>>,
 }) => {
-
     const [form] = Form.useForm();
+    const [disabledHours, setDisableHours] = useState(getPastHours());
+
     const handleOk = () => {
         form.validateFields().then(() => {
             form.submit();
@@ -45,27 +46,74 @@ const DeliveryTimeModal = ({
         return !(current.isSame(today, 'day') || current.isSame(tomorrow, 'day') || current.isSame(nextTomorrow, 'day'));
     }
 
+    const handleOnSelectDate = (date: dayjs.Dayjs) => {
+        const currentDate = dayjs().date();
+        const selectDate = date.date();
+
+        if (selectDate > currentDate) {
+            console.log("set empty");
+            setDisableHours([]);
+        } else {
+            console.log("set past");
+            setDisableHours(getPastHours());
+        }
+    }
+
+    const handleOnSelectTime = (time: dayjs.Dayjs) => {
+
+    }
+
     return (
         <Modal title="Delivery Time" open={isOpen} onOk={handleOk} onCancel={handleCancel} okButtonProps={{ typeof: "submit", style: { backgroundColor: "var(--orange-4)" } }} cancelButtonProps={{ style: { backgroundColor: "transparent" } }}>
             <Form form={form} onFinish={(values) => { handleOnFinish(values) }} initialValues={{
                 date: dayjs(),
                 time: getNextHour(),
             }}>
-                <Form.Item name={"date"} rules={[
+                <Form.Item label={"Received Date"} name={"date"} rules={[
                     {
                         required: true,
                         message: "Please select one date"
                     }
                 ]}>
-                    <DatePicker className="w-full" disabledDate={disabledDate}/>
+                    <DatePicker 
+                        onSelect={(date) => handleOnSelectDate(date)}
+                        className="w-full"
+                        disabledDate={disabledDate}
+                    />
                 </Form.Item>
-                <Form.Item name={"time"} rules={[
+                <Form.Item label={"Received Time"} name={"time"} rules={[
                     {
                         required: true,
                         message: "Please select one time"
                     }
                 ]}>
-                    <TimePicker allowClear={false} className="w-full" minuteStep={30} format={"HH:mm"} showNow={false} disabledTime={() => ({ disabledHours: () => getPastHours() })}/>
+                    <TimePicker 
+                        onSelect={(time) => handleOnSelectTime(time)} 
+                        allowClear={false} 
+                        className="w-full" 
+                        minuteStep={30} 
+                        format={"HH:mm"} 
+                        showNow={false} 
+                        disabledTime={() => ({ 
+                            disabledHours: () => disabledHours,
+                            disabledMinutes(hour) {
+                                if (disabledHours.includes(hour) || hour === -1) {
+                                    return [0, 30];
+                                }
+                                const day = dayjs();
+
+                                if (hour === day.hour()) {
+                                    if (day.minute() < 30) {
+                                        return [0];
+                                    } else {
+                                        return [0, 30];
+                                    }
+                                }
+
+                                return [];
+                            },
+                        })}
+                    />
                 </Form.Item>
             </Form>
         </Modal>

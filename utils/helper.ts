@@ -1,6 +1,8 @@
 import cryptoJs from "crypto-js";
 import dayjs from "dayjs";
-import moment from "moment";
+import { uniq } from "lodash";
+
+const unavailableHours = [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
 
 export const encodeAes = (data: string, secretKey: string) => {
     return cryptoJs.AES.encrypt(data, secretKey).toString();
@@ -29,17 +31,33 @@ export const classNames = (...classes: any) => {
 };
 
 export const getPastHours = () => {
-    const currentHour = moment().hours();
-    return Array.from(Array(currentHour + 1).keys());
+    const currentHour = dayjs().hour();
+    const pastAndInvalidHours = Array.from(Array(currentHour).keys()).concat(
+        unavailableHours
+    );
+
+    if (dayjs().minute() >= 30) {
+        pastAndInvalidHours.push(currentHour);
+    }
+
+    return uniq(pastAndInvalidHours);
 };
 
 export const getNextHour = () => {
-    const time = dayjs();
+    let time = dayjs();
     const minute = time.minute();
     if (minute >= 30) {
-        return time.startOf("hour").add(1, "hour");
+        time = time.set("hour", time.hour() + 1);
+        time = time.set("minute", 0);
+    } else {
+        time = time.set("minute", 30);
     }
-    return time.startOf("hour").add(30, "minutes");
+    const currentHour = time.hour();
+    if (unavailableHours.includes(currentHour)) {
+        return null;
+    }
+
+    return time;
 };
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
