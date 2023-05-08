@@ -2,7 +2,7 @@ import cryptoJs from "crypto-js";
 import dayjs from "dayjs";
 import { uniq } from "lodash";
 
-const unavailableHours = [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
+export const unavailableHours = [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
 
 export const encodeAes = (data: string, secretKey: string) => {
     return cryptoJs.AES.encrypt(data, secretKey).toString();

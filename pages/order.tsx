@@ -1,12 +1,12 @@
 
 import { Form, Input, Button } from "antd";
 import { DeleteFilled } from "@ant-design/icons"
-import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import { BsFillFileEarmarkFill, BsChevronRight, BsPencilFill } from "react-icons/bs";
 import AddressModal from "../components/AddressModal";
 import DeliveryTImeModal from "../components/DeliveryTimeModal";
 import AddProductModal from "../components/AddProductModal";
+import VoucherModal from "../components/VoucherModal";
 import { useState } from "react";
 
 
@@ -15,7 +15,7 @@ export default function LoginComponent() {
     const [isOpenAddress, setIsOpenAddress] = useState(false);
     const [isOpenDelivery, setIsOpenDelivery] = useState(false);
     const [isOpenAddProduct, setIsOpenAddProduct] = useState(false);
-
+    const [isOpenVoucher, setIsOpenVoucher] = useState(false);
 
     const [deliveryInfo, setDeliveryInfo] = useState({
         titleAddress: "",
@@ -41,6 +41,7 @@ export default function LoginComponent() {
             <AddressModal isOpen={isOpenAddress} setIsOpen={setIsOpenAddress} setAddress={setDeliveryInfo}/>
             <DeliveryTImeModal isOpen={isOpenDelivery} setIsOpen={setIsOpenDelivery} setDeliveryInfo={setDeliveryInfo}/>
             <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} setDeliveryInfo={setDeliveryInfo}/>
+            <VoucherModal isOpen={isOpenVoucher} setIsOpen={setIsOpenVoucher}/>
             <div className="container-lg container-fluid custom-checkout">
                 <div className="row justify-center">
                     <div className="col-12 col-lg-10">
@@ -61,7 +62,7 @@ export default function LoginComponent() {
                                 <div className="tch-checkout-custom-mobile flex justify-between">
                                     <h4 className="tch-checkout-box__title">Delivery Information</h4>
                                 </div>
-                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border" onClick={() => setIsOpenAddress(true)}>
+                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border cursor-pointer" onClick={() => setIsOpenAddress(true)}>
                                     <div className="tch-delivery-card__image">
                                         <img width={40} src="https://minio.thecoffeehouse.com/images/tch-web-order/Delivery2.png"/>
                                     </div>
@@ -77,7 +78,7 @@ export default function LoginComponent() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border" onClick={() => setIsOpenDelivery(true)}>
+                                <div className="flex flex-row items-start tch-delivery-card tch-delivery-card--border cursor-pointer" onClick={() => setIsOpenDelivery(true)}>
                                     <div className="tch-delivery-card__image">
                                         <img width={40} src="https://img.freepik.com/free-vector/man-holding-clock-time-management-concept_23-2148823171.jpg?w=826&t=st=1683185468~exp=1683186068~hmac=c2cb79e2c96b57a8f893607c59d97de3ae2b610451961b251ec125390ceb5da3"/>
                                     </div>
@@ -212,7 +213,7 @@ export default function LoginComponent() {
                                                     items-center
                                                     justify-between
                                                 ">
-                                                    <div className="tch-order-card__left flex">
+                                                    <div className="tch-order-card__left flex cursor-pointer"  onClick={() => setIsOpenVoucher(true)}>
                                                         <p className="tch-order-card__text orange mb-0 font-medium">Voucher Discount</p>
                                                     </div>
                                                     <div className="tch-order-card__right">

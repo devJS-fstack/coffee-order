@@ -1,8 +1,9 @@
 export const products = [
     {
-        name: "Ice Milk Black Sugar",
-        img: "https://minio.thecoffeehouse.com/image/admin/1669736835_ca-phe-sua-da_400x400.png",
+        nameProduct: "Ice Milk Black Sugar",
+        favIcon: "https://minio.thecoffeehouse.com/image/admin/1669736835_ca-phe-sua-da_400x400.png",
         price: "29",
+        description: ""
     },
     {
         name: "The Ice Milk Coffee House",

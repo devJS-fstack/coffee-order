@@ -1,6 +1,6 @@
 import { Modal, TimePicker, DatePicker, Form } from "antd";
 import { useState, Dispatch, SetStateAction } from "react";
-import { getNextHour, getPastHours } from "../../utils/helper";
+import { getNextHour, getPastHours, unavailableHours } from "../../utils/helper";
 import moment from "moment";
 import { IDeliveryInfo } from "../AddressModal/AddressModal";
 import dayjs from "dayjs";
@@ -16,7 +16,7 @@ const DeliveryTimeModal = ({
 }) => {
     const [form] = Form.useForm();
     const [disabledHours, setDisableHours] = useState(getPastHours());
-
+    
     const handleOk = () => {
         form.validateFields().then(() => {
             form.submit();
@@ -52,9 +52,11 @@ const DeliveryTimeModal = ({
 
         if (selectDate > currentDate) {
             console.log("set empty");
-            setDisableHours([]);
+            setDisableHours(unavailableHours);
+            form.setFieldValue("time", dayjs().hour(8).minute(0));
         } else {
             console.log("set past");
+            form.setFieldValue("time", getNextHour());
             setDisableHours(getPastHours());
         }
     }
@@ -87,7 +89,8 @@ const DeliveryTimeModal = ({
                         message: "Please select one time"
                     }
                 ]}>
-                    <TimePicker 
+                    <TimePicker
+                        inputReadOnly
                         onSelect={(time) => handleOnSelectTime(time)} 
                         allowClear={false} 
                         className="w-full" 
