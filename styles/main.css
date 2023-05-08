@@ -823,3 +823,10 @@
 .quantity-extra.hide {
     display: none!important;
 }
+
+.tch-delivery__input {
+    height: unset;
+    padding: 0;
+    background: #fafafa;
+    border: 1px solid #ededed;
+}

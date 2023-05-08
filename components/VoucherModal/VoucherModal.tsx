@@ -26,7 +26,7 @@ const VoucherModal = ({
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
             >
                 <Scrollbars autoHide style={{ height: 500 }}>
-                    <div>
+                    <div className="mb-3 tch-delivery__input flex items-center w-full relative flex-wrap">
                     </div>
                 </Scrollbars>
         </Modal>
