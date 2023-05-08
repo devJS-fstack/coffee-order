@@ -830,3 +830,91 @@
     background: #fafafa;
     border: 1px solid #ededed;
 }
+
+.input-group-append .btn, .input-group-prepend .btn {
+    position: relative;
+    z-index: 2;
+}
+
+.btn.btn--smoky-gray {
+    background: var(--smoky-gray-4);
+    color: rgba(36,36,36,.3);
+}
+
+.btn.btn--radius-right-4 {
+    border-top-right-radius: var(--space-4)!important;
+    border-bottom-right-radius: var(--space-4)!important;
+}
+
+.btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+
+.btn.btn--smoky-gray.btn--radius-right-4 {
+    height: 100%;
+    box-sizing: content-box;
+}
+
+.input-group-prepend .active {
+    background: var(--orange-2);
+}
+
+.input-group>.custom-file, .input-group>.custom-select,
+.input-group>.form-control, .input-group>.form-control-plaintext {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.tch-modal-sale-body {
+    padding: var(--space-22) 0 var(--space-76);
+}
+
+.tch-sale-card {
+    width: 100%;
+    box-shadow: 0 10px 20px rgba(0,0,0,.1);
+    background: url("https://order.thecoffeehouse.com/_nuxt/img/card_voucher.321d7af.png") 50%;
+    border-radius: 8px;
+    background-size: 100% 100%;
+}
+
+.tch-sale-card .tch-sale-card-image {
+    position: relative;
+    width: var(--space-80);
+    height: var(--space-80);
+    border-radius: var(--space-8);
+    flex-shrink: 0;
+    flex-basis: 36%;
+    overflow: hidden;
+    padding-right: var(--space-16);
+}
+
+.tch-sale-card .tch-sale-card-image img {
+    border-radius: 8px;
+    width: 100%;
+    -o-object-fit: contain;
+    object-fit: contain;
+}
+
+.tch-sale-card .tch-sale-card-content {
+    padding-left: var(--space-38);
+    flex: 1;
+}
+
+.tch-sale-card .tch-sale-card-content .text-expired-time {
+    font-size: var(--space-14);
+    line-height: var(--space-22);
+    color: var(--black-6);
+}
+
+.use-now {
+    color: #fa8c16;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.tch-sale-card .voucher-content {
+    padding: var(--space-20) var(--space-16);
+}
