@@ -229,3 +229,10 @@
         padding: 28px !important;
     }
 }
+
+@media (min-width: 576px)
+{
+    .tch-detail-sale-box {
+        padding: var(--space-16) 0 var(--space-84);
+    }
+}

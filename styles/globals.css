@@ -58,3 +58,8 @@ svg {
 .ant-spin-dot-item {
     background-color: #ff792c !important;
 }
+
+.hover-none:hover {
+    color: #444 !important;
+    border-color: transparent !important;
+}
