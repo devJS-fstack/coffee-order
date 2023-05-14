@@ -1,13 +1,21 @@
-.right-cols {
-    background: var(--white);
-    transform: translateY(-20px);
-    border-radius: 8px;
-    box-shadow: 0 -4px 10px rgba(0,0,0,.12);
-}
-
 .card-product-description {
     font-weight: 400;
     font-size: var(--space-16);
     line-height: var(--space-22);
     color: var(--black-2);
+}
+
+.btn-add-item {
+    height: var(--space-48);
+    background: radial-gradient(75.9% 488.28% at 24.1%,at 100%,#e87800 0,#fa8c16 100%);
+    background: radial-gradient(75.9% 488.28% at 24.1% 100%,#e87800 0,#fa8c16 100%);
+    box-shadow: 0 var(--space-2) var(--space-8) rgba(0,0,0,.12);
+    border-radius: var(--space-100);
+    font-size: var(--space-16);
+    line-height: var(--space-20);
+    margin-left: 0;
+    text-align: center;
+    outline: none;
+    border: none;
+    color: var(--white);
 }

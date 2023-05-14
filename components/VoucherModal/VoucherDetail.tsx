@@ -2,10 +2,12 @@ import { CopyFilled } from "@ant-design/icons";
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { injectStyle } from "react-toastify/dist/inject-style";
+import { IVoucher } from "../../apis/voucher";
+import { diffThanCurrentDate } from "../../utils/helper";
 
-
-const VoucherDetail = () => {
+const VoucherDetail = ({ voucher }: { voucher: IVoucher | {}}) => {
     const [isCopied, setIsCopied] = useState(false);
+    const voucherRef = voucher as IVoucher
     const handleOnClickCopy = (value: string) => {
         navigator.clipboard.writeText(value);
         setIsCopied(true);
@@ -31,19 +33,15 @@ const VoucherDetail = () => {
                 theme="light"
             />
             <div className="tch-detail-sale-box flex flex-col items-center">
-                <h4 className="tch-detail-sale-box-title mb-1">Discount 50%</h4>
-                <p className="tch-text-expired-time" color="#D2691E">Expired in 3 days</p>
+                <h4 className="tch-detail-sale-box-title mb-1">{voucherRef.nameVoucher}</h4>
+                <p className="tch-text-expired-time" color="#D2691E">Expired in {diffThanCurrentDate(voucherRef.dateExpired)} days</p>
                 <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg" className="tch-detail-sale-box-image"/>
                 <span className="tch-text-user-info mb-0">
-                    <span className="text mr-1">DIS329</span>
-                    <CopyFilled className="cursor-pointer" style={{ color: "#ff792c" }} onClick={() => handleOnClickCopy("DIS329")}/>
+                    <span className="text mr-1">{voucherRef.code}</span>
+                    <CopyFilled className="cursor-pointer" style={{ color: "#ff792c" }} onClick={() => handleOnClickCopy(voucherRef.code)}/>
                 </span>
                 <span className="text-center tch-text-user-info" style={{ color: "#777" }}>
-                50% off orders from 4 glasses of water or more with FREE SHIP
-                    - Apply Delivery service when ordering via App/Web The Coffee House
-                    - Applicable to all water (Except Fresh bottle)
-                    - Not applicable for parallel promotions
-                    - Time of application: From Monday to Friday, weekdays
+                    {voucherRef.description}
                 </span>
             </div>
         </div>

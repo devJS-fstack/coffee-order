@@ -1,16 +1,23 @@
-import { Button, Input } from "antd"
-import { Dispatch, SetStateAction, memo } from "react"
+import { Button, Input } from "antd";
+import { Dispatch, SetStateAction, memo } from "react";
+import { IVoucher } from "../../apis/voucher";
+import { isEmpty } from "lodash";
+import moment from "moment";
+import { diffThanCurrentDate } from "../../utils/helper";
 
-const VoucherBody = ({ setStep, setIsOpen }: 
+const VoucherBody = ({ setStep, setIsOpen, vouchers }: 
     {
         setStep: Dispatch<SetStateAction<{
         step: number;
         header: string;
         buttons: JSX.Element[];
         heightModal: string;
+        voucher: IVoucher | {};
         }>>
         setIsOpen: Dispatch<SetStateAction<boolean>>,
+        vouchers?: IVoucher[],
 }) => {
+
 
     const handleOnUseVoucher = () => {
         setStep({
@@ -21,7 +28,8 @@ const VoucherBody = ({ setStep, setIsOpen }:
                     Cancel
                 </Button>
             ],
-            heightModal: "500px"
+            heightModal: "500px",
+            voucher: {},
         });
         setIsOpen(false);
     }
@@ -39,11 +47,12 @@ const VoucherBody = ({ setStep, setIsOpen }:
                     Cancel
                 </Button>
             ],
-            heightModal: "500px"
+            heightModal: "500px",
+            voucher: {},
         })
     }
 
-    const handleOnChangeStep = (e: any) => {
+    const handleOnChangeStep = (e: any, voucher: IVoucher) => {
         if (e.target.className !== "use-now") {
             setStep((pre) => {
                 return {
@@ -57,7 +66,8 @@ const VoucherBody = ({ setStep, setIsOpen }:
                             Use Now
                         </Button>
                     ],
-                    heightModal: "420px"
+                    heightModal: "420px",
+                    voucher,
                 }
             })
         }
@@ -72,67 +82,53 @@ const VoucherBody = ({ setStep, setIsOpen }:
                     </Button>
                 </div>
             </div>
-            <section>
-                <div className="card-product-option">
-                    <span className="card-product-option-text">Active Promos</span>
-                </div>
-                <div className="tch-modal-sale-body">
-                    <div className="tch-sale-card mb-2" style={{ cursor: "pointer" }} onClick={(e) => { handleOnChangeStep(e) }}>
-                        <div className="voucher-content flex items-center">
-                            <div className="tch-sale-card-image flex justify-center">
-                                <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg"/>
-                            </div>
-                            <div className="tch-sale-card-content flex flex-col justify-between">
-                                <p className="text-description mb-0">Discount 50%</p>
-                                <p className="text-expired-time mb-0" color="color:#D2691E">Expired for 4 days</p>
-                                <span className="use-now">Use now</span>
+            {
+                !isEmpty(vouchers?.[0]) ?
+                <section>
+                    <div className="card-product-option">
+                        <span className="card-product-option-text">Expiration Soon</span>
+                    </div>
+                    <div className="tch-modal-sale-body">
+                        <div className="tch-sale-card mb-2" style={{ cursor: "pointer" }} onClick={(e) => { handleOnChangeStep(e, vouchers?.[0] as IVoucher) }}>
+                            <div className="voucher-content flex items-center">
+                                <div className="tch-sale-card-image flex justify-center">
+                                    <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg"/>
+                                </div>
+                                <div className="tch-sale-card-content flex flex-col justify-between">
+                                    <p className="text-description mb-0">{vouchers?.[0].nameVoucher}</p>
+                                    <p className="text-expired-time mb-0" color="color:#D2691E">Expired for {diffThanCurrentDate(vouchers?.[0].dateExpired || "")} days</p>
+                                    <span className="use-now" onClick={() => { handleOnUseVoucher() }}>Use now</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+                : undefined
+            }
 
             <section>
                 <div className="card-product-option">
                     <span className="card-product-option-text">All Promos</span>
                 </div>
                 <div className="tch-modal-sale-body">
-                    <div className="tch-sale-card mb-2">
-                        <div className="voucher-content flex items-center">
-                            <div className="tch-sale-card-image flex justify-center">
-                                <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg"/>
+                    {
+                        !isEmpty(vouchers) ?
+                        vouchers?.map(voucher => (
+                            <div className="tch-sale-card mb-2 cursor-pointer" key={voucher.id} onClick={(e) => { handleOnChangeStep(e, voucher) }}>
+                                <div className="voucher-content flex items-center">
+                                    <div className="tch-sale-card-image flex justify-center">
+                                        <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg"/>
+                                    </div>
+                                    <div className="tch-sale-card-content flex flex-col justify-between">
+                                        <p className="text-description mb-0">{voucher.nameVoucher}</p>
+                                        <p className="text-expired-time mb-0" color="color:#D2691E">Expired for {diffThanCurrentDate(voucher.dateExpired)} days</p>
+                                        <span className="use-now" onClick={() => { handleOnUseVoucher() }}>Use now</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="tch-sale-card-content flex flex-col justify-between">
-                                <p className="text-description mb-0">Discount 50%</p>
-                                <p className="text-expired-time mb-0" color="color:#D2691E">Expired for 4 days</p>
-                                <span className="use-now">Use now</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="tch-sale-card mb-2">
-                        <div className="voucher-content flex items-center">
-                            <div className="tch-sale-card-image flex justify-center">
-                                <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg"/>
-                            </div>
-                            <div className="tch-sale-card-content flex flex-col justify-between">
-                                <p className="text-description mb-0">Discount 50%</p>
-                                <p className="text-expired-time mb-0" color="color:#D2691E">Expired for 4 days</p>
-                                <span className="use-now">Use now</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="tch-sale-card mb-2">
-                        <div className="voucher-content flex items-center">
-                            <div className="tch-sale-card-image flex justify-center">
-                                <img src="https://minio.thecoffeehouse.com/image/admin/1682870140_banner-coup-1mb-2.jpg"/>
-                            </div>
-                            <div className="tch-sale-card-content flex flex-col justify-between">
-                                <p className="text-description mb-0">Discount 50%</p>
-                                <p className="text-expired-time mb-0" color="color:#D2691E">Expired for 4 days</p>
-                                <span className="use-now">Use now</span>
-                            </div>
-                        </div>
-                    </div>
+                        ))
+                        : undefined
+                    }
                 </div>
             </section>
         </>

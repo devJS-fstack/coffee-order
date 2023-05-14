@@ -3,24 +3,36 @@ import { LockClosedIcon } from "@heroicons/react/solid";
 import { Form, Input, message } from "antd";
 import Link from "next/link";
 import { useLoginMutation } from "../apis/user";
+import { useAddOrderMutation } from "../apis/order";
 import { ToastContainer, toast } from "react-toastify";
 import { injectStyle } from "react-toastify/dist/inject-style";
 import { delay } from "../utils/helper";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { isEmpty, toNumber } from "lodash";
 
 export default function LoginComponent() {
     const [form] = Form.useForm();
     const [login] = useLoginMutation();
+    const [addOrder] = useAddOrderMutation();
     const router = useRouter();
+    const order = router.query;
+    const [orderRef, setOrderRef] = useState(order);
     if (typeof window !== "undefined") {
         injectStyle();
     }
+
+    useEffect(() => {
+        router.replace({
+            pathname: "sign-in",
+        })
+    }, [])
 
     const handleOnFinish = async ({ email, password }: { email: string, password: string }) => {
         const toastId = toast.loading("Process is pending...");
         await delay(2000);
         try {
-            await login({ email, password }).unwrap();
+            const { data } = await login({ email, password }).unwrap();
             toast.update(toastId, { 
                 type: toast.TYPE.SUCCESS, 
                 render: "Login Success", 
@@ -28,7 +40,32 @@ export default function LoginComponent() {
                 autoClose: 3000, 
                 closeButton: true 
             });
-            router.push("/");
+            if (!isEmpty(orderRef)) {
+                const toppings = Object.keys(orderRef).filter(key => 
+                    !["productId", "productQuantity", "sizeId"].includes(key)
+                ).map(key => ({
+                    toppingId: toNumber(key.replace("quantity", "")),
+                    quantity: toNumber(orderRef[key]),
+                }));
+                const orderDetail = {
+                    productId: orderRef.productId,
+                    quantity: orderRef.productQuantity,
+                    sizeId: toNumber(orderRef.sizeId),
+                    toppings
+                } as any
+                await addOrder({
+                    addressReceiver: "",
+                    instructionAddressReceiver: "",
+                    nameReceiver: `${data.firstName} ${data.lastName}`,
+                    paymentMethod: "CASH",
+                    phoneReceiver: data.phoneNumber || "",
+                    shippingFee: 0,
+                    orderDetail,
+                })
+                router.push("/order");
+            } else {
+                router.push("/");
+            }
         } catch (error: any) {
             toast.update(toastId, { 
                 type: toast.TYPE.ERROR, render: error.message || "An error occur while try to executing request", 

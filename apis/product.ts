@@ -11,6 +11,18 @@ export type IProduct = {
     price: number;
 };
 
+export type ITopping = {
+    id: number;
+    nameTopping: string;
+    price: number;
+};
+
+export type ISizeProduct = {
+    id: number;
+    size: string;
+    price: number;
+};
+
 export const productApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         products: builder.query({
@@ -53,11 +65,19 @@ export const productApiSlice = apiSlice.injectEndpoints({
                 };
             },
             transformResponse(
-                baseQueryReturnValue: { data: IProduct },
+                baseQueryReturnValue: {
+                    data: {
+                        product: IProduct;
+                        toppings: ITopping[];
+                        sizes: ISizeProduct[];
+                    };
+                },
                 meta,
                 arg
             ) {
-                return baseQueryReturnValue.data;
+                return {
+                    ...baseQueryReturnValue.data,
+                };
             },
         }),
     }),

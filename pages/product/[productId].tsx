@@ -2,21 +2,26 @@ import { Image, Radio, Input, Spin } from "antd";
 import { ADD_CART_BTN, MINUS_CART_BTN, NOTE_ICON } from "../../utils/variable";
 import { useRouter } from "next/router";
 import { useProductQuery } from "../../apis/product";
-import { toNumber } from "lodash";
-import { products } from "../../mock/product";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { selectCurrentUser } from "../../auth/authSlice";
+import { useSelector } from "react-redux";
+import { isEmpty, toNumber } from "lodash";
 
 export default function ProductPage() {
+    const currentUser = useSelector(selectCurrentUser);
     const router = useRouter();
     const { productId = 1 } = router.query;
-    // const { data: product, isLoading } = useProductQuery(productId);
-    const product = products[0]
-    const isLoading = false;
+    const { data: dataProduct, isLoading } = useProductQuery(productId);
+    const product = dataProduct?.product;
+    const toppings = dataProduct?.toppings;
+    const sizes = dataProduct?.sizes;
     const [objectQuantity, setObjectQuantity] = useState({
         enabledMinus: false,
         enabledPlus: true,
         quantity: 1,
     });
+    const [sizeId, setSizeId] = useState(0);
+    const [totalQuantity, setTotalQuantity] = useState(product?.price || 0);
     const handleMinusQuantity = (e: any) => {
         const isEnabled = e.target.parentElement.className.includes("active") || e.target.className.includes("active");
         if (isEnabled){
@@ -30,6 +35,7 @@ export default function ProductPage() {
             }
 
             setObjectQuantity(newObjectQuantity);
+            setTotalQuantity((pre) => pre -= product?.price || 0);
         }
     }
 
@@ -46,41 +52,28 @@ export default function ProductPage() {
             }
 
             setObjectQuantity(newObjectQuantity);
+            setTotalQuantity((pre) => pre += product?.price || 0);
         }
     }
 
-    const toppings = [
-        {
-            id: 1,
-            nameTopping: "Lychee",
-            price: 10,
-        },
-        {
-            id: 2,
-            nameTopping: "Strawberry",
-            price: 15,
-        },
-        {
-            id: 3,
-            nameTopping: "Shot Espresso",
-            price: 20
-        },
-        {
-            id: 4,
-            nameTopping: "White Pearl",
-            price: 5
-        }
-    ];
 
-    const toppingsMapped: any = toppings.reduce((acc, topping) => {
-        return {
-            ...acc,
-            [`${topping.id}quantity`]: 0,
-            [`${topping.id}enabledMinus`]: false,
-            [`${topping.id}enabledPlus`]: true,
-        }
-    }, {});
-    const [objToppingQuantity, setObjToppingQuantity] = useState(toppingsMapped);
+    const [objToppingQuantity, setObjToppingQuantity] = useState({} as any);
+
+    useEffect(() => {
+        const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
+            return {
+                ...acc,
+                [`${topping.id}quantity`]: 0,
+                [`${topping.id}enabledMinus`]: false,
+                [`${topping.id}enabledPlus`]: true,
+            }
+        }, {});
+
+        setObjToppingQuantity(toppingsMapped);
+        setTotalQuantity(product?.price || 0);
+        setSizeId(sizes?.find((size) => size.price === 0)?.id || 0);
+    }, [toppings, product, sizes])
+
     const handleMinusToppingQuantity = (e: any, id: number) => {
         const isDisabled = e.target.parentElement.className.includes("hide") || e.target.className.includes("hide");
         if (!isDisabled){
@@ -95,6 +88,7 @@ export default function ProductPage() {
             }
 
             setObjToppingQuantity(newObjectQuantity);
+            setTotalQuantity((pre) => pre -= toppings?.find(topping => topping.id === id)?.price || 0)
         }
     }
 
@@ -112,6 +106,21 @@ export default function ProductPage() {
             }
 
             setObjToppingQuantity(newObjectQuantity);
+            setTotalQuantity((pre) => pre += toppings?.find(topping => topping.id === id)?.price || 0)
+        }
+    }
+
+    const handleOnSubmitCart = () => {
+        if (isEmpty(currentUser)) {
+            const toppingIds = Object.keys(objToppingQuantity).filter(
+                key => key.includes("quantity") && objToppingQuantity[key]
+            ).reduce((acc, key) => {
+                return { ...acc, [key]: objToppingQuantity[key] }
+            },{});
+            router.push({
+                pathname: "/sign-in",
+                query: { productId, productQuantity: objectQuantity.quantity ,...toppingIds, sizeId },
+            });
         }
     }
 
@@ -164,36 +173,34 @@ export default function ProductPage() {
                                     <span className="card-product-option-text">Choose Size (Required)</span>
                                 </div>
                                 <div className="justify-between card-product-option-size-item items-center flex mt-4">
-                                    <Radio.Group>
-                                        <Radio className="card-product-option-item" value={1}>
-                                            <div className="flex flex-col justify-center">
-                                                <span>Large</span>
-                                                <span>+ 20$</span>
-                                            </div>
-                                        </Radio>
-                                        <Radio className="card-product-option-item" value={2}>
-                                            <div className="flex flex-col justify-center">
-                                                <span>Medium</span>
-                                                <span>+ 15$</span>
-                                            </div>
-                                        </Radio>
-                                        <Radio className="card-product-option-item" value={3}>
-                                            <div className="flex flex-col justify-center">
-                                                <span>Small</span>
-                                                <span>+ 10$</span>
-                                            </div>
-                                        </Radio>
-                                    </Radio.Group>
+                                    {
+                                        !isLoading ?
+                                        <Radio.Group value={sizeId} onChange={(e) => { setSizeId(e.target.value) }}>
+                                        {
+                                            sizes?.map(size => (
+                                                <Radio className="card-product-option-item" key={size.id} value={size.id}>
+                                                    <div className="flex flex-col justify-center">
+                                                        <span>{size.size}</span>
+                                                        <span>+ {size.price}$</span>
+                                                    </div>
+                                                </Radio>
+                                            ))
+                                        }
+                                        </Radio.Group>
+                                        : undefined
+                                    }
                                 </div>
                             </section>
-
-                            <section className="card-product-topping">
+                            {
+                                !isLoading ?
+                                !isEmpty(toppings) ? 
+                                <section className="card-product-topping">
                                 <div className="card-product-option" style={{ marginLeft: 0, width: "100%" }}>
                                     <span className="card-product-option-text">Choose Topping (Optional)</span>
                                 </div>
                                 <div className="card-product-option-topping-item">
                                     {
-                                        toppings.map(topping => (
+                                        (toppings || []).map(topping => (
                                             <div className="card-product-option-topping flex" key={topping.id}>
                                                 <div className="flex flex-col">
                                                     <span className="card-product-option-topping-name">{topping.nameTopping}</span>
@@ -212,8 +219,14 @@ export default function ProductPage() {
                                         ))
                                     }
                                 </div>
-                            </section>
+                                </section>
+                                : undefined
+                                : undefined
+                            }
                         </div>
+                            <button className="btn-add-item block w-full mt-6" onClick={handleOnSubmitCart}>
+                                {totalQuantity} $ - Add To Cart
+                            </button>
                     </div>
         </div>
             }

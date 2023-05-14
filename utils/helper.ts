@@ -1,6 +1,7 @@
 import cryptoJs from "crypto-js";
 import dayjs from "dayjs";
 import { uniq } from "lodash";
+import moment from "moment";
 
 export const unavailableHours = [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
 
@@ -61,3 +62,6 @@ export const getNextHour = () => {
 };
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+export const diffThanCurrentDate = (date: string) =>
+    date ? moment(date).diff(moment(), "days") : 0;

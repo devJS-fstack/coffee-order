@@ -1,10 +1,10 @@
 import { Button, Modal } from "antd";
-import { Input } from "antd";
 import { useState, Dispatch, SetStateAction } from "react";
 import Scrollbars from "react-custom-scrollbars";
 import VoucherBody from "./VoucherBody";
 import VoucherDetail from "./VoucherDetail";
-
+import { useVouchersQuery } from "../../apis/voucher";
+import CustomSpin from "../Spin";
 
 const VoucherModal = ({ 
     isOpen,
@@ -13,6 +13,8 @@ const VoucherModal = ({
     isOpen: boolean,
     setIsOpen: Dispatch<SetStateAction<boolean>>,
 }) => {
+    const { data: vouchers, isLoading } = useVouchersQuery({});
+
     const handleOk = () => {
         setIsOpen(false);
       };
@@ -28,7 +30,8 @@ const VoucherModal = ({
                 Cancel
             </Button>
         ],
-        heightModal: "500px"
+        heightModal: "500px",
+        voucher: {},
     });
 
     return (
@@ -39,11 +42,17 @@ const VoucherModal = ({
             okButtonProps={{ typeof: "submit", style: { backgroundColor: "var(--orange-4)" }}}
             footer={step.buttons}
             >
-                <Scrollbars autoHide style={{ height: step.heightModal, overflowX: "hidden" }}>
-                    {
-                        step.step === 1 ? <VoucherBody setStep={setStep} setIsOpen={setIsOpen}/> : <VoucherDetail/>
-                    }
-                </Scrollbars>
+                {
+                    !isLoading ?
+                    <Scrollbars autoHide style={{ height: step.heightModal, overflowX: "hidden" }}>
+                        {
+                            step.step === 1 ? <VoucherBody vouchers={vouchers} setStep={setStep} setIsOpen={setIsOpen}/> 
+                            : <VoucherDetail voucher={step.voucher}/>
+                        }
+                    </Scrollbars>
+                    :
+                    <CustomSpin style={{ height: "200px" }}/>
+                }
         </Modal>
     )
 }

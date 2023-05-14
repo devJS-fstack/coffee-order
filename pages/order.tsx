@@ -138,17 +138,6 @@ export default function LoginComponent() {
                                             <span className="text">Cash</span>
                                         </div>
                                     </li>
-                                    <li className="tch-payment-method-item">
-                                        <div className="custom-control custom-radio mb-0">
-                                            <input type="radio" name="payment-method" className="custom-control-input cursor-pointer" id="MOMO"/>
-                                            <label htmlFor="MOMO" className="custom-control-label tch-custom-radio cursor-pointer inline-block" style={{ paddingLeft: 6 }}>
-                                                <span className="icon ml-3 mr-2">
-                                                    <img className="inline-block" src="https://minio.thecoffeehouse.com/image/tchmobileapp/386_ic_momo@3x.png" />
-                                                </span>
-                                            </label>
-                                            <span className="text">MoMo</span>
-                                        </div>
-                                    </li>
                                 </ul>
                             </div>
                             <div className="none tch-checkout-box tch-checkout-box--lg-shadowbox d-lg-block float-lg-right pb-0 pt-0">
@@ -213,7 +202,8 @@ export default function LoginComponent() {
                                                     items-center
                                                     justify-between
                                                 ">
-                                                    <div className="tch-order-card__left flex cursor-pointer"  onClick={() => setIsOpenVoucher(true)}>
+                                                    <div className="tch-order-card__left flex cursor-pointer items-center"  onClick={() => setIsOpenVoucher(true)}>
+                                                        <BsPencilFill className="tch-order-card__text orange mr-2"/>
                                                         <p className="tch-order-card__text orange mb-0 font-medium">Voucher Discount</p>
                                                     </div>
                                                     <div className="tch-order-card__right">
@@ -243,7 +233,7 @@ export default function LoginComponent() {
                             </div>
                             <div className="
                                     tch-checkout-box tch-checkout-box--remove-card float-lg-right
-                                ">
+                                " style={{ width: "100%" }}>
                                     <div className="tch-checkout-box__text text-center mb-0">
                                         <DeleteFilled style={{
                                                     color: "#F87171"
