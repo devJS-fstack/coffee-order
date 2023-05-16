@@ -40,7 +40,7 @@ export default function LoginComponent() {
             />
             <AddressModal isOpen={isOpenAddress} setIsOpen={setIsOpenAddress} setAddress={setDeliveryInfo}/>
             <DeliveryTImeModal isOpen={isOpenDelivery} setIsOpen={setIsOpenDelivery} setDeliveryInfo={setDeliveryInfo}/>
-            <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} setDeliveryInfo={setDeliveryInfo}/>
+            <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct}/>
             <VoucherModal isOpen={isOpenVoucher} setIsOpen={setIsOpenVoucher}/>
             <div className="container-lg container-fluid custom-checkout">
                 <div className="row justify-center">

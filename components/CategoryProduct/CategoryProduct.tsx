@@ -2,20 +2,25 @@ import { Pagination, Spin } from "antd";
 import { CoffeeOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { ADD_CART_BTN } from "../../utils/variable"
-// import { products } from "../../mock/product";
+import { products } from "../../mock/product";
 import { useCategoriesQuery } from "../../apis/category";
 import { useProductsQuery } from "../../apis/product";
 import { useRouter } from "next/router";
+import AddProductModal from "../AddProductModal/AddProductModal";
 
 const CategoryProduct = () => {
     const router = useRouter();
     const [categoryCurr, setCategoryCurr] = useState(1);
     const [pageNumber, setPageNumber] = useState(1);
     const [isNewLoadingProduct, setLoadingProduct] = useState(true);
-    const { data: categories, isLoading: isLoadingCategory } = useCategoriesQuery({});
-    const { data: dataProducts, isLoading: isLoadingProduct } = useProductsQuery({ categoryId: categoryCurr, pageNumber });
-    const products = dataProducts?.products;
-    const total = dataProducts?.total;
+    const [isOpenAddProduct, setIsOpenAddProduct] = useState(false);
+    // const { data: categories, isLoading: isLoadingCategory } = useCategoriesQuery({});
+    // const { data: dataProducts, isLoading: isLoadingProduct } = useProductsQuery({ categoryId: categoryCurr, pageNumber });
+    // const products = dataProducts?.products;
+    // const total = dataProducts?.total;
+    const dataProducts = products;
+    const isLoadingProduct = false;
+    const isLoadingCategory = false;
 
     const handleOnClickCategory = (id: number) => {
         setCategoryCurr(id);
@@ -57,7 +62,7 @@ const CategoryProduct = () => {
                     </div>
                 </div>
                 <ul className="tch-category-card-list tch-category-card-list--spacing flex justify-content-md-center flex-xl-wrap flex-lg-wrap border-0">
-                        {
+                        {/* {
                             !isLoadingCategory ? (categories ?? []).map((category) => (
                                 <li className="ml-2" key={category.id} onClick={(e) => { handleOnClickCategory(category.id) }}>
                                     <a className={`nav-link nav-link-category m-0 border-0 ${categoryCurr === category.id ? "active" : ""}`}>
@@ -72,7 +77,7 @@ const CategoryProduct = () => {
                                     </a>
                                 </li>
                             )) : <Spin/>
-                        }
+                        } */}
                 </ul>
                 {
                     isNewLoadingProduct ? 
@@ -98,7 +103,7 @@ const CategoryProduct = () => {
                                                             <p className="mb-0">
                                                                 <span className="block">{product.price} $</span>
                                                             </p>
-                                                            <div className="btn btn--orange-1 add-to-cart p-0">
+                                                            <div className="btn btn--orange-1 add-to-cart p-0" onClick={() => { setIsOpenAddProduct(true) }}>
                                                                 <img src={ADD_CART_BTN} style={{ maxWidth: "none" }}/>
                                                             </div>
                                                         </div>
@@ -110,10 +115,11 @@ const CategoryProduct = () => {
                                 }
                             </div>
                         </div>
-                        { total ? <Pagination onChange={(page) => { handleOnChangePage(page) }} current={pageNumber} style={{ textAlign: "center" }} total={total}/> : <></>}
+                        {/* { total ? <Pagination onChange={(page) => { handleOnChangePage(page) }} current={pageNumber} style={{ textAlign: "center" }} total={total}/> : <></>} */}
                     </div>
                 }
             </div>
+            <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} isEdit={false}/>
         </div>
     )
 }

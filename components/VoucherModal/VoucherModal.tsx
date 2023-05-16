@@ -44,7 +44,7 @@ const VoucherModal = ({
             >
                 {
                     !isLoading ?
-                    <Scrollbars autoHide style={{ height: step.heightModal, overflowX: "hidden" }}>
+                    <Scrollbars renderThumbHorizontal={() => <></>} autoHide style={{ height: step.heightModal, overflowX: "hidden" }}>
                         {
                             step.step === 1 ? <VoucherBody vouchers={vouchers} setStep={setStep} setIsOpen={setIsOpen}/> 
                             : <VoucherDetail voucher={step.voucher}/>
