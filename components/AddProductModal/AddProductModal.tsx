@@ -7,18 +7,21 @@ import { selectCurrentUser } from "../../auth/authSlice";
 import { useRouter } from "next/router";
 import { useProductQuery } from "../../apis/product";
 import CustomSpin from "../Spin";
-import { isEmpty, toNumber } from "lodash";
+import { isEmpty, sumBy, toNumber } from "lodash";
+import { IResponseProductOrder } from "../../apis/order";
 
 const AddProductModal = ({ 
     isOpen,
     setIsOpen,
     isEdit = true,
     productId = 1,
+    productOrder
  }: { 
     isOpen: boolean,
     setIsOpen: Dispatch<SetStateAction<boolean>>,
     isEdit?: boolean;
     productId?: number;
+    productOrder?: IResponseProductOrder
 }) => {
     const scrollRef = useRef(null);
     const currentUser = useSelector(selectCurrentUser);
@@ -37,9 +40,9 @@ const AddProductModal = ({
     const toppings = dataProduct?.toppings;
     const sizes = dataProduct?.sizes;
     const [objectQuantity, setObjectQuantity] = useState({
-        enabledMinus: false,
-        enabledPlus: true,
-        quantity: 1,
+        enabledMinus: (productOrder?.quantity || 0) > 1,
+        enabledPlus: (productOrder?.quantity || 0) < 10,
+        quantity: productOrder?.quantity || 1,
     });
     
     const [sizeId, setSizeId] = useState(0);
@@ -83,11 +86,12 @@ const AddProductModal = ({
 
     useEffect(() => {
         const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
+            const toppingOrder = productOrder?.toppings.find(element => element.toppingId === topping.id);
             return {
                 ...acc,
-                [`${topping.id}quantity`]: 0,
-                [`${topping.id}enabledMinus`]: false,
-                [`${topping.id}enabledPlus`]: true,
+                [`${topping.id}quantity`]: toppingOrder?.quantity || 0,
+                [`${topping.id}enabledMinus`]: (toppingOrder?.quantity || 0) > 0,
+                [`${topping.id}enabledPlus`]: (toppingOrder?.quantity || 0) < 2,
             }
         }, {});
 
@@ -131,6 +135,26 @@ const AddProductModal = ({
             setTotalQuantity((pre) => pre += toppings?.find(topping => topping.id === id)?.price || 0)
         }
     }
+
+    useEffect(() => {
+        const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
+            const toppingOrder = productOrder?.toppings.find(element => element.toppingId === topping.id);
+            return {
+                ...acc,
+                [`${topping.id}quantity`]: toppingOrder?.quantity || 0,
+                [`${topping.id}enabledMinus`]: (toppingOrder?.quantity || 0) > 0,
+                [`${topping.id}enabledPlus`]: (toppingOrder?.quantity || 0) < 2,
+            }
+        }, {});
+        setObjToppingQuantity(toppingsMapped);
+        setObjectQuantity({
+            enabledMinus: (productOrder?.quantity || 0) > 1,
+            enabledPlus: (productOrder?.quantity || 0) < 10,
+            quantity: productOrder?.quantity || 1,
+        });
+        setSizeId(productOrder?.sizeId || 0);
+        setTotalQuantity((productOrder?.totalPrice || 0) + sumBy(productOrder?.toppings, "totalPrice"))
+    }, [productOrder, isOpen])
 
     const handleOnChangeSize = (value: number) => {
         const preSize = sizes?.find(size => size.id === sizeId);
@@ -176,7 +200,7 @@ const AddProductModal = ({
             {
                 isFetching ? <CustomSpin/>
                 :
-                <Scrollbars ref={scrollRef} renderThumbHorizontal={() => <div></div>} autoHide style={{ height: 600 }}>
+                <Scrollbars ref={scrollRef} renderThumbHorizontal={() => <div></div>} autoHide style={{ height: 500 }}>
                     <div>
                         <div className="flex">
                             <div className="tch-product__image card-product-info-image relative">

@@ -6,9 +6,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { setCredentials, logOut } from "../auth/authSlice";
 
-export const BASE_URL =
-    "http://6b27-2402-800-637d-e3e4-4c60-51f0-b32f-6679.ngrok-free.app/";
-// export const BASE_URL = "http://localhost:3900/";
+export const BASE_URL = "http://localhost:3900/";
 
 export const HTTP_STATUS_CODES = {
     SUCCESS: 200,
@@ -36,7 +34,7 @@ export const baseQuery = fetchBaseQuery({
 export const baseQueryReAuth = async (
     args: string | FetchArgs,
     api: BaseQueryApi,
-    extraOptions = {},
+    extraOptions = {}
 ) => {
     let result = await baseQuery(args, api, extraOptions);
     if (result?.error?.status === HTTP_STATUS_CODES.FORBIDDEN) {
@@ -44,7 +42,7 @@ export const baseQueryReAuth = async (
         const refreshResult = await baseQuery(
             "/refresh-token",
             api,
-            extraOptions,
+            extraOptions
         );
         if (refreshResult?.data) {
             const getCustomState = api.getState as any;

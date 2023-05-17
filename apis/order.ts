@@ -57,6 +57,8 @@ export interface IResponseProductOrder {
     orderId: number;
     productId: number;
     sizeId: number;
+    nameProduct: string;
+    size: string;
     toppings: IResponseToppingOrder[];
 }
 
@@ -83,9 +85,8 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
             ) {
-                console.log(baseQueryReturnValue);
                 return baseQueryReturnValue.data;
             },
         }),
