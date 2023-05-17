@@ -51,6 +51,7 @@ export default function Header() {
     const [nav, setNav] = useState(navigation);
     const currentUser = useSelector(selectCurrentUser);
     // console.log("currentUser: ", currentUser);
+    
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
             if (index === i) {
@@ -221,7 +222,7 @@ export default function Header() {
                                             </Menu.Items>
                                         </Transition>
                                     </Menu>
-                                    <div className="flex text-sm rounded-full cursor-pointer" style={{ marginTop: "5px"}}>
+                                    <div className="flex text-sm rounded-full cursor-pointer" style={{ marginTop: "5px"}} onClick={() => { router.push("/order") }}>
                                         <img
                                             className="h-8 w-8 rounded-full"
                                             src="https://order.thecoffeehouse.com/_nuxt/img/Carticon.373916c.png"

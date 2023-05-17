@@ -4,13 +4,18 @@ import { Form, Input, InputNumber, Select } from "antd";
 import { IUser, useRegisMutation } from "../apis/user";
 import Link from "next/link"
 import { ToastContainer, toast } from "react-toastify";
-import { delay } from "../utils/helper";
+import { delay, isJson } from "../utils/helper";
 import { injectStyle } from "react-toastify/dist/inject-style";
+import { isEmpty } from "lodash";
+import { useRouter } from "next/router";
+import { useAddOrderMutation } from "../apis/order";
 
 
 export default function SignUp() {
     const [form] = Form.useForm();
     const [register] = useRegisMutation();
+    const [addOrder] = useAddOrderMutation();
+    const router = useRouter();
     if (typeof window !== "undefined") {
         injectStyle();
     }
@@ -22,20 +27,36 @@ export default function SignUp() {
         const toastId = toast.loading("Process is pending...");
         await delay(2000);
         try {
-            await register({ email, firstName, lastName, password, phoneNumber }).unwrap();
+            const { data } = await register({ email, firstName, lastName, password, phoneNumber }).unwrap();
             toast.update(toastId, { 
-                type: toast.TYPE.SUCCESS, 
-                render: "Sign Up Success", 
-                isLoading: false, 
-                autoClose: 3000, 
-                closeButton: true 
+                type: toast.TYPE.SUCCESS,
+                render: "Sign Up Success",
+                isLoading: false,
+                autoClose: 3000,
+                closeButton: true,
             });
+            const orderInfo = isJson(sessionStorage.getItem("orderInfo")) ? JSON.parse(sessionStorage.getItem("orderInfo") as string) : {};
+            if (!isEmpty(orderInfo)) {
+                await addOrder({
+                    addressReceiver: "",
+                    instructionAddressReceiver: "",
+                    nameReceiver: `${data.firstName} ${data.lastName}`,
+                    paymentMethod: "CASH",
+                    phoneReceiver: data.phoneNumber || "",
+                    shippingFee: 0,
+                    orderDetail: orderInfo,
+                });
+                sessionStorage.removeItem("orderInfo");
+                router.push("/order");
+            } else {
+                router.push("/")
+            }
         } catch (error: any) {
             toast.update(toastId, { 
-                type: toast.TYPE.ERROR, render: error.message || "An error occur while try to executing request", 
-                isLoading: false, 
-                autoClose: 3000, 
-                closeButton: true 
+                type: toast.TYPE.ERROR, render: error.message || "An error occur while try to executing request",
+                isLoading: false,
+                autoClose: 3000,
+                closeButton: true
             });
         }
 
@@ -44,30 +65,30 @@ export default function SignUp() {
     const validatePassword = (rule: any, value: string, callback: any) => {
         if (value.length > 0) {
             if (value.length < 8) {
-                callback("At least 8 characters");
+                return Promise.reject(new Error("At least 8 characters"));
             }
 
             if (value.length > 15) {
-                callback("Max 15 characters");
+                return Promise.reject(new Error("Max 15 characters"));
             }
 
             if (!/(?=.*?[A-Z])/.test(value)) {
-                callback("At least 1 upper-case character");
+                return Promise.reject(new Error("At least 1 upper-case character"));
             }
 
             if (!/(?=.*?[a-z])/.test(value)) {
-                callback("At least 1 lower-case character");
+                return Promise.reject(new Error("At least 1 lower-case character"));
             }
 
             if (!/(?=.*?[0-9])/.test(value)) {
-                callback("At least 1 number");
+                return Promise.reject(new Error("At least 1 number"));
             }
 
             if (!/(?=.*?[#?!@$%^&*-])/.test(value)) {
-                callback("At least 1 special character");
+                return Promise.reject(new Error("At least 1 special character"));
             }
         }
-        callback();
+        return Promise.resolve();
     }
 
     const prefixSelector = (
@@ -206,7 +227,6 @@ export default function SignUp() {
                             name="confirm"
                             label="Confirm Password"
                             dependencies={["password"]}
-                            hasFeedback
                             rules={[
                                 {
                                 required: true,
@@ -215,7 +235,7 @@ export default function SignUp() {
                                 ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     if (!value || getFieldValue("password") === value) {
-                                    return Promise.resolve();
+                                        return Promise.resolve();
                                     }
                                     return Promise.reject(new Error("The two passwords that you entered do not match!"));
                                 },
@@ -239,7 +259,7 @@ export default function SignUp() {
                                     <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                                         <LockClosedIcon className="h-5 w-5 text-indigo-500 text-white" aria-hidden="true" />
                                     </span>
-                                        Sign in
+                                        Sign up
                                 </button>
                                 </div>
                                 <div className="text-sm flex justify-center mt-4">

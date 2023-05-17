@@ -7,6 +7,7 @@ import { selectCurrentUser } from "../../auth/authSlice";
 import { useRouter } from "next/router";
 import { useProductQuery } from "../../apis/product";
 import CustomSpin from "../Spin";
+import { isEmpty, toNumber } from "lodash";
 
 const AddProductModal = ({ 
     isOpen,
@@ -20,10 +21,7 @@ const AddProductModal = ({
     productId?: number;
 }) => {
     const scrollRef = useRef(null);
-
-    const handleOk = () => {
-        setIsOpen(false);
-    };
+    const currentUser = useSelector(selectCurrentUser);
     
     const handleCancel = () => {
         setIsOpen(false);
@@ -143,34 +141,42 @@ const AddProductModal = ({
         });
         setSizeId(value);
     }
+    const router = useRouter();
 
-    // const handleOnSubmitCart = () => {
-    //     if (isEmpty(currentUser)) {
-    //         const toppingIds = Object.keys(objToppingQuantity).filter(
-    //             key => key.includes("quantity") && objToppingQuantity[key]
-    //         ).reduce((acc, key) => {
-    //             return { ...acc, [key]: objToppingQuantity[key] }
-    //         },{});
-    //         router.push({
-    //             pathname: "/sign-in",
-    //             query: { productId, productQuantity: objectQuantity.quantity ,...toppingIds, sizeId },
-    //         });
-    //     }
-    // }
+    const handleOnOk = () => {
+        if (isEmpty(currentUser)) {
+            const toppingIds = Object.keys(objToppingQuantity).filter(
+                key => key.includes("quantity") && objToppingQuantity[key]
+            )
+            const toppings = toppingIds.map(key => ({
+                toppingId: toNumber(key.replace("quantity", "")),
+                quantity: toNumber(objToppingQuantity[key]),
+            }));
+            const orderInfo = {
+                productId: productId,
+                quantity: objectQuantity.quantity,
+                sizeId: sizeId,
+                toppings
+            };
+            sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+            router.push("/sign-in");
+        }
+    }
 
     return (
         <Modal title={`${isEdit ? "Edit Order": "Add Drink"}`}
             width={"430px"}
-            open={isOpen} onOk={handleOk}
+            open={isOpen} onOk={handleOnOk}
             onCancel={handleCancel}
             okButtonProps={{ typeof: "submit", style: { backgroundColor: "var(--orange-4)", display: isFetching ? "none" : "inline"  } }}
             okText={`${isEdit ? `${totalQuantity} $ - Save changes`: `${totalQuantity} $ - Add to cart`}`}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
+            
         >
             {
                 isFetching ? <CustomSpin/>
                 :
-                <Scrollbars ref={scrollRef} renderThumbHorizontal={() => <div></div>} autoHide style={{ height: 500 }}>
+                <Scrollbars ref={scrollRef} renderThumbHorizontal={() => <div></div>} autoHide style={{ height: 600 }}>
                     <div>
                         <div className="flex">
                             <div className="tch-product__image card-product-info-image relative">

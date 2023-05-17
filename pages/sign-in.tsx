@@ -6,7 +6,7 @@ import { useLoginMutation } from "../apis/user";
 import { useAddOrderMutation } from "../apis/order";
 import { ToastContainer, toast } from "react-toastify";
 import { injectStyle } from "react-toastify/dist/inject-style";
-import { delay } from "../utils/helper";
+import { delay, isJson } from "../utils/helper";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { isEmpty, toNumber } from "lodash";
@@ -16,17 +16,9 @@ export default function LoginComponent() {
     const [login] = useLoginMutation();
     const [addOrder] = useAddOrderMutation();
     const router = useRouter();
-    const order = router.query;
-    const [orderRef, setOrderRef] = useState(order);
     if (typeof window !== "undefined") {
         injectStyle();
     }
-
-    useEffect(() => {
-        router.replace({
-            pathname: "sign-in",
-        })
-    }, [])
 
     const handleOnFinish = async ({ email, password }: { email: string, password: string }) => {
         const toastId = toast.loading("Process is pending...");
@@ -40,19 +32,8 @@ export default function LoginComponent() {
                 autoClose: 3000, 
                 closeButton: true 
             });
-            if (!isEmpty(orderRef)) {
-                const toppings = Object.keys(orderRef).filter(key => 
-                    !["productId", "productQuantity", "sizeId"].includes(key)
-                ).map(key => ({
-                    toppingId: toNumber(key.replace("quantity", "")),
-                    quantity: toNumber(orderRef[key]),
-                }));
-                const orderDetail = {
-                    productId: orderRef.productId,
-                    quantity: orderRef.productQuantity,
-                    sizeId: toNumber(orderRef.sizeId),
-                    toppings
-                } as any
+            const orderInfo = isJson(sessionStorage.getItem("orderInfo")) ? JSON.parse(sessionStorage.getItem("orderInfo") as string) : {};
+            if (!isEmpty(orderInfo)) {
                 await addOrder({
                     addressReceiver: "",
                     instructionAddressReceiver: "",
@@ -60,8 +41,9 @@ export default function LoginComponent() {
                     paymentMethod: "CASH",
                     phoneReceiver: data.phoneNumber || "",
                     shippingFee: 0,
-                    orderDetail,
-                })
+                    orderDetail: orderInfo,
+                });
+                sessionStorage.removeItem("orderInfo");
                 router.push("/order");
             } else {
                 router.push("/");
