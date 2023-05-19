@@ -26,6 +26,13 @@ export interface IPayloadCreateOrder {
     orderDetail: IOrderDetail;
 }
 
+export interface IPayloadUpdateProductOrder {
+    productOrderId: number;
+    quantity: number;
+    sizeId: number;
+    toppingOrders: IToppingDetail[];
+}
+
 export interface IResponseOrder {
     id: number;
     nameReceiver: string;
@@ -45,10 +52,10 @@ export interface IResponseOrder {
 export interface IResponseToppingOrder {
     id: number;
     quantity: number;
+    productQuantity: number;
     totalPrice: number;
-    orderId: number;
-    productId: number;
     toppingId: number;
+    productOrderId: number;
 }
 export interface IResponseProductOrder {
     id: number;
@@ -85,12 +92,30 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return baseQueryReturnValue.data;
             },
         }),
+        updateProductOrder: builder.mutation({
+            query: (payload: IPayloadUpdateProductOrder) => ({
+                url: `${basePath}`,
+                method: "PUT",
+                body: payload,
+            }),
+        }),
+        deleteProductOrder: builder.mutation({
+            query: (productOrderId: number) => ({
+                url: `${basePath}/product-orders/${productOrderId}`,
+                method: "DELETE",
+            }),
+        }),
     }),
 });
 
-export const { useAddOrderMutation, useNewOrderQuery } = orderApiSlice;
+export const {
+    useAddOrderMutation,
+    useNewOrderQuery,
+    useUpdateProductOrderMutation,
+    useDeleteProductOrderMutation,
+} = orderApiSlice;

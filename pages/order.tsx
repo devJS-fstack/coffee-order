@@ -1,5 +1,5 @@
 
-import { Form, Input, Button, Divider } from "antd";
+import { Form, Input, Button, Divider, Popconfirm, Modal } from "antd";
 import { DeleteFilled } from "@ant-design/icons"
 import { ToastContainer, toast } from "react-toastify";
 import { BsFillFileEarmarkFill, BsChevronRight, BsPencilFill } from "react-icons/bs";
@@ -8,21 +8,30 @@ import DeliveryTImeModal from "../components/DeliveryTimeModal";
 import AddProductModal from "../components/AddProductModal";
 import VoucherModal from "../components/VoucherModal";
 import { useEffect, useState } from "react";
-import { IResponseProductOrder, useNewOrderQuery } from "../apis/order";
+import { IResponseProductOrder, useDeleteProductOrderMutation, useNewOrderQuery } from "../apis/order";
 import CustomSpin from "../components/Spin";
 import moment from "moment";
-import { sumBy } from "lodash";
+import { isEmpty, sumBy } from "lodash";
 import { delay } from "../utils/helper";
 import NoData from "../components/NoData";
+import { useRouter } from "next/router";
+import ConfirmModal from "../components/ConfirmModal/ConfirmModal";
 
 
 export default function LoginComponent() {
     const [form] = Form.useForm();
+    const router = useRouter();
     const [isOpenAddress, setIsOpenAddress] = useState(false);
     const [isOpenDelivery, setIsOpenDelivery] = useState(false);
     const [isOpenAddProduct, setIsOpenAddProduct] = useState(false);
     const [isOpenVoucher, setIsOpenVoucher] = useState(false);
-    const { data: orderDetail, isFetching } = useNewOrderQuery({});
+    const [deleteObjectInfo, setDeleteObjectInfo] = useState({
+        isOpen: false,
+        isLoadingBtn: false,
+        productOrderId: 0,
+    });
+    const { data: orderDetail, isFetching, refetch: refetchOrder,  } = useNewOrderQuery({});
+    const [deleteProductOrder] = useDeleteProductOrderMutation();
     const [isNewFetching, setIsNewFetching] = useState(true);
     const { order, productOrders } = orderDetail || {};
     const [productOrderCurr, setProductOrderCurr] = useState(productOrders?.[0]);
@@ -40,10 +49,44 @@ export default function LoginComponent() {
     }
 
     useEffect(() => {
-        delay(1000).then(() => {
-            setIsNewFetching(isFetching);
+        if (isNewFetching) {
+            delay(0).then(() => {
+                setIsNewFetching(isFetching);
+            });
+        }
+    }, [isFetching]);
+
+    useEffect(() => {
+        refetchOrder();
+    }, [])
+
+    const handleOnClickDelete = (productOrderId: number) => {
+        setDeleteObjectInfo({
+            isLoadingBtn: false,
+            isOpen: true,
+            productOrderId,
+        })
+    }
+
+    const handleOnDeleteProductOrder = async () => {
+        setDeleteObjectInfo(pre => ({
+            ...pre,
+            isLoadingBtn: true,
+        }))
+        await deleteProductOrder(deleteObjectInfo.productOrderId);
+        delay(2000).then(async () => {
+            setDeleteObjectInfo(pre => ({
+                ...pre,
+                isLoadingBtn: false,
+                isOpen: false,
+            }));
+            await refetchOrder();
         });
-    }, [isFetching])
+    }
+
+    const handleCancelDeleteConfirm = () => {
+        setDeleteObjectInfo(pre => ({ ...pre, isOpen: false }))
+    }
 
     return (
         <>
@@ -59,12 +102,24 @@ export default function LoginComponent() {
                 pauseOnHover
                 theme="light"
             />
+            <ConfirmModal
+                okText="Delete"
+                okButtonProps={{ loading: deleteObjectInfo.isLoadingBtn }}
+                isOpen={deleteObjectInfo.isOpen}
+                title="Confirm Delete"
+                handleCancel={handleCancelDeleteConfirm}
+                handleOk={handleOnDeleteProductOrder}
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>Are you sure you want to delete this product of an order?</span>
+                        <span style={{ color: "#ef4444" }}>This action cannot be undone. Are you sure to proceed?</span>
+                    </div>
+                }
+            />
             <AddressModal isOpen={isOpenAddress} setIsOpen={setIsOpenAddress} setAddress={setDeliveryInfo}/>
             <DeliveryTImeModal isOpen={isOpenDelivery} setIsOpen={setIsOpenDelivery} setDeliveryInfo={setDeliveryInfo}/>
-            <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} productId={productOrderCurr?.productId} productOrder={productOrderCurr}/>
+            <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} productId={productOrderCurr?.productId} productOrder={productOrderCurr} refetchOrder={refetchOrder}/>
             <VoucherModal isOpen={isOpenVoucher} setIsOpen={setIsOpenVoucher}/>
-            {
-                order ?
                 <div className="container-lg container-fluid custom-checkout">
                     <div className="row justify-center">
                         <div className="col-12 col-lg-10">
@@ -83,6 +138,7 @@ export default function LoginComponent() {
                             {
                                 isNewFetching ? <CustomSpin/>
                                 :
+                                !isEmpty(order) ?
                                 <div className="ml-lg--50 block">
                                     <div className="tch-checkout-box tch-checkout-box--delivery tch-checkout-border float-lg-left">
                                         <div className="tch-checkout-custom-mobile flex justify-between">
@@ -171,11 +227,12 @@ export default function LoginComponent() {
                                             <div className="tch-checkout-box tch-checkout-box--list-ordered tch-checkout-border w-full">
                                                 <div className="flex justify-between">
                                                     <h4 className="tch-checkout-box__title mb-0">Selected Orders</h4>
-                                                    <a>
+                                                    <a onClick={() => router.push("/")}>
                                                         <p className="tch-checkout-box__btn-outline">Add more</p>
                                                     </a>
                                                 </div>
                                                 {
+                                                    !isFetching ?
                                                     productOrders?.map(productOrder => (
                                                         <div className="tch-order-card flex items-center justify-between" key={productOrder.id}>
                                                             <div className="tch-order-card__left flex">
@@ -188,13 +245,15 @@ export default function LoginComponent() {
                                                                 </div>
                                                             </div>
                                                             <div className="tch-order-card__right flex items-center">
-                                                                <p className="tch-order-card__price mb-0 mr-4">{productOrder.totalPrice} $</p>
-                                                                <DeleteFilled style={{
+                                                                <p className="tch-order-card__price mb-0 mr-4">{productOrder.totalPrice + sumBy(productOrder.toppings, "totalPrice")} $</p>
+                                                                <DeleteFilled onClick={() => handleOnClickDelete(productOrder.id)} style={{
                                                                     color: "#F87171"
                                                                 }} />
                                                             </div>
                                                         </div>
                                                     ))
+                                                    :
+                                                    <CustomSpin style={{ height: "100px" }}/>
                                                 }
                                                 <Divider/>
                                                 <div className="tch-checkout-box tch-checkout-box--list-total tch-checkout-border w-full">
@@ -211,7 +270,9 @@ export default function LoginComponent() {
                                                                 <p className="tch-order-card__text mb-0">Amount</p>
                                                             </div>
                                                             <div className="tch-order-card__right">
-                                                                <p className="tch-order-card__price mb-0 mr-4">{sumBy(productOrders, "totalPrice")} $</p>    
+                                                                <p className="tch-order-card__price mb-0 mr-4">{productOrders?.reduce((acc, productOrder) => {
+                                                                    return acc + productOrder.totalPrice + sumBy(productOrder.toppings, "totalPrice")
+                                                                }, 0)} $</p>    
                                                             </div>
                                                     </div>
                                                     <div className="
@@ -224,7 +285,7 @@ export default function LoginComponent() {
                                                                 <p className="tch-order-card__text mb-0">Shipping Fee</p>
                                                             </div>
                                                             <div className="tch-order-card__right">
-                                                                <p className="tch-order-card__price mb-0 mr-4">{order?.shippingFee} $</p>    
+                                                                <p className="tch-order-card__price mb-0 mr-4">+ {order?.shippingFee} $</p>    
                                                             </div>
                                                     </div>
                                                     <div className="
@@ -254,7 +315,7 @@ export default function LoginComponent() {
                                             ">
                                                 <div>
                                                     <p className="tch-order-card__text text-white mb-0">Total</p>
-                                                    <p className="tch-order-card__text text-white font-medium mb-0">80$</p>
+                                                    <p className="tch-order-card__text text-white font-medium mb-0">{order.totalPayment} $</p>
                                                 </div>
                                                 <Button className="font-medium" type="primary" shape="round" size="middle" style={{
                                                     backgroundColor: "white",
@@ -273,18 +334,17 @@ export default function LoginComponent() {
                                             </div>
                                     </div>
                                 </div>
+                                    : <NoData title="No Order Available" subTitle={
+                                        (
+                                            <div>
+                                                No order have been placed, Let's click <span className="cursor-pointer" style={{ color: "#0084ff", textDecoration: "underline" }}>here</span> to discover more
+                                            </div>
+                                        )
+                                    } className="mt-40"/>
                             }
                         </div>
                     </div>
                 </div>
-                : <NoData title="No Order Available" subTitle={
-                    (
-                        <div>
-                            No order have been placed, Let's click <span className="cursor-pointer" style={{ color: "#0084ff", textDecoration: "underline" }}>here</span> to discover more
-                        </div>
-                    )
-                } className="mt-40"/>
-            }
         </>
     )
 }

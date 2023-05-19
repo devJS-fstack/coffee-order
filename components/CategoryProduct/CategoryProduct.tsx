@@ -2,7 +2,6 @@ import { Pagination, Spin } from "antd";
 import { CoffeeOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { ADD_CART_BTN } from "../../utils/variable"
-// import { products } from "../../mock/product";
 import { useCategoriesQuery } from "../../apis/category";
 import { useProductsQuery } from "../../apis/product";
 import { useRouter } from "next/router";

@@ -1,5 +1,5 @@
 import { Input, Modal, Radio } from "antd";
-import { useState, Dispatch, SetStateAction, useRef, useEffect } from "react";
+import { useState, Dispatch, SetStateAction, useRef, useEffect, memo } from "react";
 import { ADD_CART_BTN, MINUS_CART_BTN, NOTE_ICON } from "../../utils/variable";
 import { Scrollbars } from "react-custom-scrollbars";
 import { useSelector } from "react-redux";
@@ -8,20 +8,23 @@ import { useRouter } from "next/router";
 import { useProductQuery } from "../../apis/product";
 import CustomSpin from "../Spin";
 import { isEmpty, sumBy, toNumber } from "lodash";
-import { IResponseProductOrder } from "../../apis/order";
+import { IResponseProductOrder, useAddOrderMutation, useUpdateProductOrderMutation } from "../../apis/order";
+import { delay } from "../../utils/helper";
 
 const AddProductModal = ({ 
     isOpen,
     setIsOpen,
     isEdit = true,
     productId = 1,
-    productOrder
+    productOrder,
+    refetchOrder,
  }: { 
     isOpen: boolean,
     setIsOpen: Dispatch<SetStateAction<boolean>>,
     isEdit?: boolean;
     productId?: number;
     productOrder?: IResponseProductOrder
+    refetchOrder?: any;
 }) => {
     const scrollRef = useRef(null);
     const currentUser = useSelector(selectCurrentUser);
@@ -46,7 +49,8 @@ const AddProductModal = ({
     });
     
     const [sizeId, setSizeId] = useState(0);
-    const [totalQuantity, setTotalQuantity] = useState(product?.price || 0);
+    const [totalPrice, setTotalPrice] = useState(productOrder?.totalPrice || product?.price || 0);
+    
     const handleMinusQuantity = (e: any) => {
         const isEnabled = e.target.parentElement.className.includes("active") || e.target.className.includes("active");
         if (isEnabled){
@@ -58,9 +62,14 @@ const AddProductModal = ({
             if (newObjectQuantity.quantity === 1){
                 newObjectQuantity.enabledMinus = false;
             }
+            const totalPriceTopping = toppings?.reduce((acc, topping) => {
+                return acc += objToppingQuantity[`${topping.id}quantity`] * topping.price;
+            }, 0);
+            const sizePick = sizes?.find(size => size.id === sizeId);
+            const newTotal = totalPrice - (product?.price || 0) - (sizePick?.price || 0) - (totalPriceTopping || 0);
 
             setObjectQuantity(newObjectQuantity);
-            setTotalQuantity((pre) => pre -= product?.price || 0);
+            setTotalPrice(newTotal);
         }
     }
 
@@ -76,8 +85,13 @@ const AddProductModal = ({
                 newObjectQuantity.enabledPlus = false;
             }
 
+            const totalPriceTopping = toppings?.reduce((acc, topping) => {
+                return acc += objToppingQuantity[`${topping.id}quantity`] * topping.price;
+            }, 0);
+            const sizePick = sizes?.find(size => size.id === sizeId);
+            const newTotal = totalPrice + (product?.price || 0) + (sizePick?.price || 0) + (totalPriceTopping || 0);
             setObjectQuantity(newObjectQuantity);
-            setTotalQuantity((pre) => pre += product?.price || 0);
+            setTotalPrice(newTotal);
         }
     }
 
@@ -85,20 +99,27 @@ const AddProductModal = ({
     const [objToppingQuantity, setObjToppingQuantity] = useState({} as any);
 
     useEffect(() => {
-        const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
-            const toppingOrder = productOrder?.toppings.find(element => element.toppingId === topping.id);
-            return {
-                ...acc,
-                [`${topping.id}quantity`]: toppingOrder?.quantity || 0,
-                [`${topping.id}enabledMinus`]: (toppingOrder?.quantity || 0) > 0,
-                [`${topping.id}enabledPlus`]: (toppingOrder?.quantity || 0) < 2,
-            }
-        }, {});
-
-        setObjToppingQuantity(toppingsMapped);
-        setTotalQuantity(product?.price || 0);
-        setSizeId(sizes?.find((size) => size.price === 0)?.id || 0);
-    }, [toppings, product, sizes])
+        if (!isEdit) {
+            const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
+                const toppingOrder = productOrder?.toppings.find(element => element.toppingId === topping.id);
+                return {
+                    ...acc,
+                    [`${topping.id}quantity`]: toppingOrder?.quantity || 0,
+                    [`${topping.id}enabledMinus`]: (toppingOrder?.quantity || 0) > 0,
+                    [`${topping.id}enabledPlus`]: (toppingOrder?.quantity || 0) < 2,
+                }
+            }, {});
+    
+            setObjToppingQuantity(toppingsMapped);
+            setTotalPrice(product?.price || 0);
+            setSizeId(sizes?.find((size) => size.price === 0)?.id || 0);
+            setObjectQuantity({
+                quantity: 1,
+                enabledMinus: false,
+                enabledPlus: true,
+            })   
+        }
+    }, [toppings, product, sizes, isOpen])
 
     const handleMinusToppingQuantity = (e: any, id: number) => {
         const isDisabled = e.target.parentElement.className.includes("hide") || e.target.className.includes("hide");
@@ -114,7 +135,9 @@ const AddProductModal = ({
             }
 
             setObjToppingQuantity(newObjectQuantity);
-            setTotalQuantity((pre) => pre -= toppings?.find(topping => topping.id === id)?.price || 0)
+            const priceTopping = toppings?.find(topping => topping.id === id)?.price || 0;
+            const newTotal = totalPrice - (priceTopping * objectQuantity.quantity);
+            setTotalPrice(newTotal);
         }
     }
 
@@ -132,58 +155,95 @@ const AddProductModal = ({
             }
 
             setObjToppingQuantity(newObjectQuantity);
-            setTotalQuantity((pre) => pre += toppings?.find(topping => topping.id === id)?.price || 0)
+            const priceTopping = toppings?.find(topping => topping.id === id)?.price || 0;
+            const newTotal = totalPrice + (priceTopping * objectQuantity.quantity);
+            setTotalPrice(newTotal);
         }
     }
 
     useEffect(() => {
-        const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
-            const toppingOrder = productOrder?.toppings.find(element => element.toppingId === topping.id);
-            return {
-                ...acc,
-                [`${topping.id}quantity`]: toppingOrder?.quantity || 0,
-                [`${topping.id}enabledMinus`]: (toppingOrder?.quantity || 0) > 0,
-                [`${topping.id}enabledPlus`]: (toppingOrder?.quantity || 0) < 2,
-            }
-        }, {});
-        setObjToppingQuantity(toppingsMapped);
-        setObjectQuantity({
-            enabledMinus: (productOrder?.quantity || 0) > 1,
-            enabledPlus: (productOrder?.quantity || 0) < 10,
-            quantity: productOrder?.quantity || 1,
-        });
-        setSizeId(productOrder?.sizeId || 0);
-        setTotalQuantity((productOrder?.totalPrice || 0) + sumBy(productOrder?.toppings, "totalPrice"))
+        if (isEdit) {
+            const toppingsMapped: any = (toppings || []).reduce((acc, topping) => {
+                const toppingOrder = productOrder?.toppings.find(element => element.toppingId === topping.id);
+                return {
+                    ...acc,
+                    [`${topping.id}quantity`]: toppingOrder?.quantity || 0,
+                    [`${topping.id}enabledMinus`]: (toppingOrder?.quantity || 0) > 0,
+                    [`${topping.id}enabledPlus`]: (toppingOrder?.quantity || 0) < 2,
+                }
+            }, {});
+            setObjToppingQuantity(toppingsMapped);
+            setObjectQuantity({
+                enabledMinus: (productOrder?.quantity || 0) > 1,
+                enabledPlus: (productOrder?.quantity || 0) < 10,
+                quantity: productOrder?.quantity || 1,
+            });
+            setSizeId(productOrder?.sizeId || 0);
+            setTotalPrice((productOrder?.totalPrice || 0) + sumBy(productOrder?.toppings, "totalPrice"))
+        }
     }, [productOrder, isOpen])
 
     const handleOnChangeSize = (value: number) => {
         const preSize = sizes?.find(size => size.id === sizeId);
         const currentSize = sizes?.find(size => size.id === value);
-        setTotalQuantity(pre => {
-            const price = pre - (preSize?.price || 0) + (currentSize?.price || 0)
-            return price;
-        });
+        const newTotal = totalPrice - ((preSize?.price || 0) * objectQuantity.quantity) + ((currentSize?.price || 0) * objectQuantity.quantity);
+        setTotalPrice(newTotal);
         setSizeId(value);
     }
     const router = useRouter();
 
-    const handleOnOk = () => {
-        if (isEmpty(currentUser)) {
-            const toppingIds = Object.keys(objToppingQuantity).filter(
-                key => key.includes("quantity") && objToppingQuantity[key]
-            )
-            const toppings = toppingIds.map(key => ({
-                toppingId: toNumber(key.replace("quantity", "")),
-                quantity: toNumber(objToppingQuantity[key]),
-            }));
+    const [addOrder] = useAddOrderMutation();
+    const [updateProductOrder] = useUpdateProductOrderMutation();
+    const [isLoadingBtn, setIsLoadingBtn] = useState(false);
+
+    const handleOnOk = async () => {
+        setIsLoadingBtn(true);
+        const toppingIds = Object.keys(objToppingQuantity).filter(
+            key => key.includes("quantity") && objToppingQuantity[key]
+        )
+        const toppings = toppingIds.map(key => ({
+            toppingId: toNumber(key.replace("quantity", "")),
+            quantity: toNumber(objToppingQuantity[key]),
+        }));
+        if (!isEdit) {
             const orderInfo = {
                 productId: productId,
                 quantity: objectQuantity.quantity,
                 sizeId: sizeId,
                 toppings
             };
-            sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));
-            router.push("/sign-in");
+            if (isEmpty(currentUser)) {
+                sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+                router.push("/sign-in");
+            } else {
+                await addOrder({
+                    addressReceiver: "",
+                    instructionAddressReceiver: "",
+                    nameReceiver: `${currentUser.firstName} ${currentUser.lastName}`,
+                    paymentMethod: "CASH",
+                    phoneReceiver: currentUser.phoneNumber || "",
+                    shippingFee: 0,
+                    orderDetail: orderInfo,
+                });
+                delay(1000).then(() => {
+                    setIsLoadingBtn(false);
+                    router.push("/order");
+                })
+            }
+        } else {
+            if (productOrder) {
+                await updateProductOrder({
+                    productOrderId: productOrder.id,
+                    quantity: objectQuantity.quantity,
+                    sizeId,
+                    toppingOrders: toppings,
+                });
+                delay(2000).then(async () => {
+                    setIsLoadingBtn(false);
+                    setIsOpen(false);
+                    await refetchOrder();
+                });
+            }
         }
     }
 
@@ -192,10 +252,10 @@ const AddProductModal = ({
             width={"430px"}
             open={isOpen} onOk={handleOnOk}
             onCancel={handleCancel}
-            okButtonProps={{ typeof: "submit", style: { backgroundColor: "var(--orange-4)", display: isFetching ? "none" : "inline"  } }}
-            okText={`${isEdit ? `${totalQuantity} $ - Save changes`: `${totalQuantity} $ - Add to cart`}`}
+            okButtonProps={{ loading: isLoadingBtn, typeof: "submit", style: { backgroundColor: "var(--orange-4)", display: isFetching ? "none" : "inline"  } }}
+            okText={`${isEdit ? `${totalPrice} $ - Save changes`: `${totalPrice} $ - Add to cart`}`}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
-            
+
         >
             {
                 isFetching ? <CustomSpin/>
@@ -289,4 +349,4 @@ const AddProductModal = ({
     )
 }
 
-export default AddProductModal;
+export default memo(AddProductModal);
