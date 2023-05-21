@@ -11,6 +11,8 @@ import { selectCurrentUser, logOut } from "../../auth/authSlice";
 import { useSelector } from "react-redux";
 import { isEmpty } from "lodash";
 import { store } from "../../app/store";
+import { Badge } from "antd";
+import { useNewOrderQuery } from "../../apis/order";
 
 
 type Nav = {
@@ -51,6 +53,7 @@ export default function Header() {
     const [nav, setNav] = useState(navigation);
     const currentUser = useSelector(selectCurrentUser);
     // console.log("currentUser: ", currentUser);
+    const { data: orderDetail  } = useNewOrderQuery({});
     
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
@@ -165,6 +168,7 @@ export default function Header() {
                                                         <Menu.Item>
                                                             {({ active }: any) => (
                                                                 <div
+                                                                onClick={() => router.push("/my-account")}
                                                                 className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
                                                                 >
                                                                     <UserOutlined className="mr-2" />
@@ -175,6 +179,7 @@ export default function Header() {
                                                         <Menu.Item>
                                                             {({ active }: any) => (
                                                                 <div
+                                                                onClick={() => router.push("/order-history")}
                                                                 className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
                                                                 >
                                                                     <FieldTimeOutlined className="mr-2" />
@@ -232,6 +237,7 @@ export default function Header() {
                                                 width: "58px",
                                             }}
                                         />
+                                        <Badge count={orderDetail?.productOrders?.length || 0} style={{ position: "absolute", top: 4, right: 4 }}/>
                                     </div>
                                 </div>
                             </div>

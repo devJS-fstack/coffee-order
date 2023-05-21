@@ -4,15 +4,18 @@ import "../styles/main.css";
 import "../styles/product.css";
 import "../styles/responsive.css";
 import Header from "../components/header";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { store } from "../app/store";
 import { useEffect } from "react";
 import { get } from "lodash";
 import { encodeAes } from "../utils/helper";
 import { variables } from "../utils/variable";
+import { selectCurrentUser } from "../auth/authSlice";
 
 
 function MyApp({ Component, pageProps }: AppProps) {
+  // const currentUser = useSelector(selectCurrentUser);
+  // console.log("Current: ", currentUser);
   useEffect(() => {
     if (typeof window !== "undefined") {
       store.subscribe(() => {

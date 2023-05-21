@@ -5,7 +5,7 @@ import { isEmpty } from "lodash";
 import moment from "moment";
 import { diffThanCurrentDate } from "../../utils/helper";
 
-const VoucherBody = ({ setStep, setIsOpen, vouchers }: 
+const VoucherBody = ({ setStep, setIsOpen, vouchers, setVoucherCode }: 
     {
         setStep: Dispatch<SetStateAction<{
         step: number;
@@ -16,10 +16,11 @@ const VoucherBody = ({ setStep, setIsOpen, vouchers }:
         }>>
         setIsOpen: Dispatch<SetStateAction<boolean>>,
         vouchers?: IVoucher[],
+        setVoucherCode: Dispatch<SetStateAction<string>>
 }) => {
 
 
-    const handleOnUseVoucher = () => {
+    const handleOnUseVoucher = (code: string) => {
         setStep({
             step: 1,
             header: "Promos",
@@ -32,6 +33,7 @@ const VoucherBody = ({ setStep, setIsOpen, vouchers }:
             voucher: {},
         });
         setIsOpen(false);
+        setVoucherCode(code)
     }
 
     const handleCancel = () => {
@@ -62,7 +64,7 @@ const VoucherBody = ({ setStep, setIsOpen, vouchers }:
                         <Button onClick={handleOnBack} style={{ backgroundColor: "transparent" }} key="BACK">
                             Back
                         </Button>,
-                        <Button typeof="submit" className="text-white hover-none" onClick={handleOnUseVoucher} style={{ backgroundColor: "var(--orange-4)" }} key="USE">
+                        <Button typeof="submit" className="text-white hover-none" onClick={() => handleOnUseVoucher(voucher.code)} style={{ backgroundColor: "var(--orange-4)" }} key="USE">
                             Use Now
                         </Button>
                     ],
@@ -97,7 +99,7 @@ const VoucherBody = ({ setStep, setIsOpen, vouchers }:
                                 <div className="tch-sale-card-content flex flex-col justify-between">
                                     <p className="text-description mb-0">{vouchers?.[0].nameVoucher}</p>
                                     <p className="text-expired-time mb-0" color="color:#D2691E">Expired for {diffThanCurrentDate(vouchers?.[0].dateExpired || "")} days</p>
-                                    <span className="use-now" onClick={() => { handleOnUseVoucher() }}>Use now</span>
+                                    <span className="use-now" onClick={() => { handleOnUseVoucher(vouchers?.[0].code || "") }}>Use now</span>
                                 </div>
                             </div>
                         </div>
@@ -122,7 +124,7 @@ const VoucherBody = ({ setStep, setIsOpen, vouchers }:
                                     <div className="tch-sale-card-content flex flex-col justify-between">
                                         <p className="text-description mb-0">{voucher.nameVoucher}</p>
                                         <p className="text-expired-time mb-0" color="color:#D2691E">Expired for {diffThanCurrentDate(voucher.dateExpired)} days</p>
-                                        <span className="use-now" onClick={() => { handleOnUseVoucher() }}>Use now</span>
+                                        <span className="use-now" onClick={() => { handleOnUseVoucher(voucher.code) }}>Use now</span>
                                     </div>
                                 </div>
                             </div>

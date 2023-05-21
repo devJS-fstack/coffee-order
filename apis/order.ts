@@ -26,6 +26,16 @@ export interface IPayloadCreateOrder {
     orderDetail: IOrderDetail;
 }
 
+export interface IPayloadPlaceOrder {
+    nameReceiver: string;
+    phoneReceiver: string;
+    addressReceiver: string;
+    instructionAddressReceiver: string;
+    plannedReceivedDate?: string;
+    paymentMethod: string;
+    code: string;
+}
+
 export interface IPayloadUpdateProductOrder {
     productOrderId: number;
     quantity: number;
@@ -49,6 +59,9 @@ export interface IResponseOrder {
     voucherId: number;
 }
 
+export interface IResponseOrders extends IResponseOrder {
+    productOrders: IResponseProductOrder[];
+}
 export interface IResponseToppingOrder {
     id: number;
     quantity: number;
@@ -56,6 +69,11 @@ export interface IResponseToppingOrder {
     totalPrice: number;
     toppingId: number;
     productOrderId: number;
+    Topping: {
+        id: number;
+        nameTopping: string;
+        price: number;
+    };
 }
 export interface IResponseProductOrder {
     id: number;
@@ -92,7 +110,23 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
+            ) {
+                return baseQueryReturnValue.data;
+            },
+        }),
+        orders: builder.query({
+            query: () => ({
+                url: `${basePath}`,
+                method: "GET",
+            }),
+            transformResponse(
+                baseQueryReturnValue: {
+                    data: IResponseOrders[];
+                    message: string;
+                },
+                meta,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -110,6 +144,25 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                 method: "DELETE",
             }),
         }),
+        deleteOrder: builder.mutation({
+            query: (orderId: number) => ({
+                url: `${basePath}/${orderId}`,
+                method: "DELETE",
+            }),
+        }),
+        placeOrder: builder.mutation({
+            query: ({
+                orderId,
+                payload,
+            }: {
+                orderId: number;
+                payload: IPayloadPlaceOrder;
+            }) => ({
+                url: `${basePath}/place/${orderId}`,
+                method: "POST",
+                body: payload,
+            }),
+        }),
     }),
 });
 
@@ -118,4 +171,7 @@ export const {
     useNewOrderQuery,
     useUpdateProductOrderMutation,
     useDeleteProductOrderMutation,
+    useDeleteOrderMutation,
+    usePlaceOrderMutation,
+    useOrdersQuery,
 } = orderApiSlice;

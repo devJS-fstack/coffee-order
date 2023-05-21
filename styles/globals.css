@@ -71,3 +71,13 @@ svg {
     --tw-text-opacity: 1;
     color: rgb(156 163 175/var(--tw-text-opacity));
 }
+
+:where(.css-dev-only-do-not-override-zjzpde).ant-btn-default:not(:disabled):hover {
+    color: #fff !important;
+    border-color: transparent;
+}
+
+:where(.css-dev-only-do-not-override-zjzpde).ant-btn-default:not(:disabled):active {
+    color: #fff !important;
+    border-color: transparent;
+}

@@ -2,13 +2,14 @@
 import { Form, Input, Button, Divider, Popconfirm, Modal } from "antd";
 import { DeleteFilled } from "@ant-design/icons"
 import { ToastContainer, toast } from "react-toastify";
+import { injectStyle } from "react-toastify/dist/inject-style";
 import { BsFillFileEarmarkFill, BsChevronRight, BsPencilFill } from "react-icons/bs";
 import AddressModal from "../components/AddressModal";
 import DeliveryTImeModal from "../components/DeliveryTimeModal";
 import AddProductModal from "../components/AddProductModal";
 import VoucherModal from "../components/VoucherModal";
 import { useEffect, useState } from "react";
-import { IResponseProductOrder, useDeleteProductOrderMutation, useNewOrderQuery } from "../apis/order";
+import { IResponseProductOrder, useDeleteOrderMutation, useDeleteProductOrderMutation, useNewOrderQuery, usePlaceOrderMutation } from "../apis/order";
 import CustomSpin from "../components/Spin";
 import moment from "moment";
 import { isEmpty, sumBy } from "lodash";
@@ -16,6 +17,7 @@ import { delay } from "../utils/helper";
 import NoData from "../components/NoData";
 import { useRouter } from "next/router";
 import ConfirmModal from "../components/ConfirmModal/ConfirmModal";
+import { useDiscountQuery, useLazyDiscountQuery } from "../apis/voucher";
 
 
 export default function LoginComponent() {
@@ -30,10 +32,22 @@ export default function LoginComponent() {
         isLoadingBtn: false,
         productOrderId: 0,
     });
+    const [deleteOrderObj, setDeleteOrderObj] = useState({
+        isOpen: false,
+        isLoadingBtn: false,
+    });
+    const [placeOrderObj, setPlaceOrderObj] = useState({
+        isOpen: false,
+        isLoadingBtn: false,
+    });
     const { data: orderDetail, isFetching, refetch: refetchOrder,  } = useNewOrderQuery({});
     const [deleteProductOrder] = useDeleteProductOrderMutation();
+    const [deleteOrder] = useDeleteOrderMutation();
+    const [placeOrder] = usePlaceOrderMutation();
     const [isNewFetching, setIsNewFetching] = useState(true);
     const { order, productOrders } = orderDetail || {};
+    const [voucherCode, setVoucherCode] = useState("");
+    const [getDiscountVoucher, { data: voucherDiscount, isFetching: isFetchingDiscount }] = useLazyDiscountQuery();
     const [productOrderCurr, setProductOrderCurr] = useState(productOrders?.[0]);
 
     const [deliveryInfo, setDeliveryInfo] = useState({
@@ -58,7 +72,16 @@ export default function LoginComponent() {
 
     useEffect(() => {
         refetchOrder();
+        injectStyle();
     }, [])
+
+    useEffect(() => {
+        if (voucherCode && !isFetching) {
+            getDiscountVoucher({ totalPayment: (order?.totalPayment || 0) - (order?.shippingFee || 0),
+                code: voucherCode
+            });
+        }
+    }, [voucherCode, isFetching]);
 
     const handleOnClickDelete = (productOrderId: number) => {
         setDeleteObjectInfo({
@@ -88,11 +111,84 @@ export default function LoginComponent() {
         setDeleteObjectInfo(pre => ({ ...pre, isOpen: false }))
     }
 
+    const handleCancelDeleteOrder = () => {
+        setDeleteOrderObj(pre => ({ ...pre, isOpen: false }));
+    }
+
+    const handleOnClickDeleteOrder = () => {
+        setDeleteOrderObj({
+            isLoadingBtn: false,
+            isOpen: true,
+        })
+    }
+
+    const handleOnDeleteOrder = async () => {
+        setDeleteOrderObj({
+            isOpen: true,
+            isLoadingBtn: true,
+        });
+        await deleteOrder(order?.id || 0);
+        setDeleteOrderObj({
+            isLoadingBtn: false,
+            isOpen: false,
+        });
+        setIsNewFetching(true);
+        await refetchOrder();
+    }
+
+    const handleCancelPlaceOrder = () => {
+        setPlaceOrderObj(pre => ({ ...pre, isOpen: false }));
+    }
+
+    const handleOnClickPlaceOrder = () => {
+        form.validateFields().then(() => {
+            if (!deliveryInfo.date || !deliveryInfo.time || !deliveryInfo.fullAddress) {
+                toast.error("Please provide more delivery information");
+                return;
+            }
+            
+            setPlaceOrderObj({
+                isLoadingBtn: false,
+                isOpen: true,
+            });
+        });
+    }
+
+    const handleOnPlaceOrder = async () => {
+        const { fullAddress, date, time } = deliveryInfo;
+        const formatDateTime = moment(`${date} ${time}`).format("YYYY-MM-DD HH:mm:ss");
+        const { deliveryInstruction, name, phone } = form.getFieldsValue();
+        setPlaceOrderObj({
+            isOpen: true,
+            isLoadingBtn: true,
+        });
+        delay(2000).then(async () => {
+            await placeOrder({
+                orderId: order?.id || 0,
+                payload: {
+                    addressReceiver: fullAddress,
+                    instructionAddressReceiver: deliveryInstruction,
+                    nameReceiver: name,
+                    phoneReceiver: phone,
+                    code: voucherCode,
+                    paymentMethod: "CASH",
+                    plannedReceivedDate: formatDateTime,
+                }
+            });
+            setPlaceOrderObj({
+                isOpen: false,
+                isLoadingBtn: false,
+            });
+            setIsNewFetching(true);
+            await refetchOrder();
+        })
+    }
+
     return (
         <>
             <ToastContainer
                 position="top-right"
-                autoClose={5000}
+                autoClose={2000}
                 hideProgressBar={false}
                 newestOnTop={false}
                 closeOnClick
@@ -100,6 +196,9 @@ export default function LoginComponent() {
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
+                style={{
+                    width: "400px"
+                }}
                 theme="light"
             />
             <ConfirmModal
@@ -116,10 +215,37 @@ export default function LoginComponent() {
                     </div>
                 }
             />
+            <ConfirmModal
+                okText="Remove"
+                okButtonProps={{ loading: deleteOrderObj.isLoadingBtn }}
+                isOpen={deleteOrderObj.isOpen}
+                title="Confirm Remove Order"
+                handleCancel={handleCancelDeleteOrder}
+                handleOk={handleOnDeleteOrder}
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>Are you sure you want to remove your current order?</span>
+                        <span style={{ color: "#ef4444" }}>This action cannot be undone. Are you sure to proceed?</span>
+                    </div>
+                }
+            />
+            <ConfirmModal
+                okText="Order"
+                okButtonProps={{ loading: placeOrderObj.isLoadingBtn }}
+                isOpen={placeOrderObj.isOpen}
+                title="Confirm Place Order"
+                handleCancel={handleCancelPlaceOrder}
+                handleOk={handleOnPlaceOrder}
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>Are you sure you want to place this order?</span>
+                    </div>
+                }
+            />
             <AddressModal isOpen={isOpenAddress} setIsOpen={setIsOpenAddress} setAddress={setDeliveryInfo}/>
             <DeliveryTImeModal isOpen={isOpenDelivery} setIsOpen={setIsOpenDelivery} setDeliveryInfo={setDeliveryInfo}/>
             <AddProductModal isOpen={isOpenAddProduct} setIsOpen={setIsOpenAddProduct} productId={productOrderCurr?.productId} productOrder={productOrderCurr} refetchOrder={refetchOrder}/>
-            <VoucherModal isOpen={isOpenVoucher} setIsOpen={setIsOpenVoucher}/>
+            <VoucherModal isOpen={isOpenVoucher} setIsOpen={setIsOpenVoucher} setVoucherCode={setVoucherCode}/>
                 <div className="container-lg container-fluid custom-checkout">
                     <div className="row justify-center">
                         <div className="col-12 col-lg-10">
@@ -190,12 +316,22 @@ export default function LoginComponent() {
                                                     },
                                                 }}
                                             >
-                                                <Form.Item label="Name" name="name" initialValue={order?.nameReceiver || ""}>
+                                                <Form.Item label="Name" name="name" initialValue={order?.nameReceiver || ""} rules={[
+                                                    {
+                                                        required: true,
+                                                        message: "Please input name receiver",
+                                                    }
+                                                ]}>
                                                     <Input style={{
                                                         padding: "4px 11px"
                                                     }}/>
                                                 </Form.Item>
-                                                <Form.Item label="Phone" name="phone" initialValue={order?.phoneReceiver || ""}>
+                                                <Form.Item label="Phone" name="phone" initialValue={order?.phoneReceiver || ""} rules={[
+                                                    {
+                                                        required: true,
+                                                        message: "Please input phone receiver",
+                                                    }
+                                                ]}>
                                                     <Input style={{
                                                         padding: "4px 11px"
                                                     }}/>
@@ -299,7 +435,10 @@ export default function LoginComponent() {
                                                                 <p className="tch-order-card__text orange mb-0 font-medium">Voucher Discount</p>
                                                             </div>
                                                             <div className="tch-order-card__right">
-                                                                <p className="tch-order-card__price mb-0 mr-4">- {order?.voucherDiscount} $</p>   
+                                                                {
+                                                                    isFetchingDiscount ? <CustomSpin style={{ height: "20px", width: "45px" }}/>
+                                                                    : <p className="tch-order-card__price mb-0 mr-4">- {voucherDiscount || 0} $</p>
+                                                                }
                                                             </div>
                                                     </div>
                                                 </div>
@@ -315,15 +454,15 @@ export default function LoginComponent() {
                                             ">
                                                 <div>
                                                     <p className="tch-order-card__text text-white mb-0">Total</p>
-                                                    <p className="tch-order-card__text text-white font-medium mb-0">{order.totalPayment} $</p>
+                                                    <p className="tch-order-card__text text-white font-medium mb-0">{order.totalPayment - (voucherDiscount || 0)} $</p>
                                                 </div>
-                                                <Button className="font-medium" type="primary" shape="round" size="middle" style={{
+                                                <Button onClick={handleOnClickPlaceOrder} className="font-medium" type="primary" shape="round" size="middle" style={{
                                                     backgroundColor: "white",
                                                     color: "var(--orange-2)",
                                                 }}>Place Order</Button>
                                         </div>
                                     </div>
-                                    <div className="
+                                    <div onClick={handleOnClickDeleteOrder} className="
                                             tch-checkout-box tch-checkout-box--remove-card float-lg-right
                                         " style={{ width: "100%" }}>
                                             <div className="tch-checkout-box__text text-center mb-0">

@@ -20,10 +20,10 @@ export default function SignUp() {
         injectStyle();
     }
 
-    const handleOnFinish = async ({ email, firstName, lastName, password, phoneNumber, prefixPhone }: IUser) => {
-        console.log({ email, firstName, lastName, password, phoneNumber, prefixPhone });
+    const handleOnFinish = async ({ email, firstName, lastName, password, phoneNumber }: IUser) => {
+        console.log({ email, firstName, lastName, password, phoneNumber });
 
-        phoneNumber = `+${prefixPhone}${phoneNumber}`;
+        phoneNumber = `${phoneNumber}`;
         const toastId = toast.loading("Process is pending...");
         await delay(2000);
         try {
@@ -63,7 +63,7 @@ export default function SignUp() {
     }
 
     const validatePassword = (rule: any, value: string, callback: any) => {
-        if (value.length > 0) {
+        if (value?.length > 0) {
             if (value.length < 8) {
                 return Promise.reject(new Error("At least 8 characters"));
             }
@@ -91,14 +91,6 @@ export default function SignUp() {
         return Promise.resolve();
     }
 
-    const prefixSelector = (
-        <Form.Item name="prefixPhone" noStyle>
-          <Select style={{ width: 70 }}>
-            <Select.Option value="84">+84</Select.Option>
-            <Select.Option value="85">+85</Select.Option>
-          </Select>
-        </Form.Item>
-      );
     return (
         <>
             <ToastContainer
@@ -181,14 +173,10 @@ export default function SignUp() {
                                         required: true,
                                         message: "Please input your phone number!",
                                     },
-                                    {
-                                        type: "number",
-                                        message: "Please input correct your number"
-                                    }
                                 ]}
                                 hasFeedback
                                 >
-                                <InputNumber upHandler={false} downHandler={false} addonBefore={prefixSelector} style={{ width: "100%" }} />
+                                <Input style={{ width: "100%" }} />
                             </Form.Item>
                             <Form.Item
                                 name="email"
