@@ -83,10 +83,16 @@ export const authApiSlice = apiSlice.injectEndpoints({
             },
         }),
         updateProfile: builder.mutation({
-            query: ({ firstName, lastName, id, phoneNumber }: IUser) => ({
+            query: ({
+                firstName,
+                lastName,
+                id,
+                phoneNumber,
+                roleId,
+            }: IUser) => ({
                 url: `${basePathUser}/${id}`,
                 method: "PATCH",
-                body: { firstName, lastName, phoneNumber },
+                body: { firstName, lastName, phoneNumber, roleId },
             }),
             transformErrorResponse: (error: any) => {
                 const { data } = error || {};
@@ -121,10 +127,25 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 return data.data;
             },
         }),
+        createUser: builder.mutation({
+            query: (credentials) => ({
+                url: `${basePathUser}/sign-up`,
+                method: "POST",
+                body: { ...credentials },
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
     }),
 });
 
 export const {
+    useCreateUserMutation,
     useLoginMutation,
     useRegisMutation,
     useUpdateProfileMutation,

@@ -1,40 +1,55 @@
-import { Modal, AutoComplete, Form, Input, Button, Select, } from "antd";
+import { Modal, AutoComplete, Form, Input, Button, Select } from "antd";
 import { useState, Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { getListAddress } from "../../apis/coffee-house";
-import { IUser, useRolesQuery } from "../../apis/user";
+import {
+    IUser,
+    useRegisMutation,
+    useRolesQuery,
+    useUpdateProfileMutation,
+} from "../../apis/user";
 import { isEmpty, isEqual, toNumber } from "lodash";
+import { delay, validatePassword } from "../../utils/helper";
+import ScrollbarsV1 from "../Scrollbar";
+import { ToastContainer, toast } from "react-toastify";
 
 export interface IDeliveryInfo {
     titleAddress: string;
     fullAddress: string;
-    date: string,
-    time: string,
+    date: string;
+    time: string;
 }
 
-const UserModal = ({ 
+const UserModal = ({
     isOpen,
     setIsOpen,
     user,
     setUserInfo,
-    isEdit = false
- }: { 
-    isOpen: boolean,
-    isEdit?: boolean
-    setIsOpen: Dispatch<SetStateAction<boolean>>,
-    setUserInfo: Dispatch<SetStateAction<IUser | undefined>>
-    user?: IUser
+    isEdit = false,
+    refetchUsers,
+}: {
+    isOpen: boolean;
+    isEdit?: boolean;
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
+    setUserInfo: Dispatch<SetStateAction<IUser | undefined>>;
+    user?: IUser;
+    refetchUsers: any;
 }) => {
     const [form] = Form.useForm();
+    const [isOpenSb, setIsOpenSb] = useState(isOpen);
+    const [isLoadingBtn, setIsLoadingBtn] = useState(false);
+    const [mCreateUser] = useRegisMutation();
+    const [mUpdateUser] = useUpdateProfileMutation();
     const [newUserInfo, setNewUserInfo] = useState(user);
     const { data: roles } = useRolesQuery({});
     const isDisabledSave = useMemo(() => {
         return isEqual(user, newUserInfo);
-      }, [user, newUserInfo]);
+    }, [user, newUserInfo]);
 
     const handleOk = () => {
-        setIsOpen(false);
-      };
-    
+        form.submit();
+        // setIsOpen(false);
+    };
+
     const handleCancel = () => {
         setIsOpen(false);
     };
@@ -44,18 +59,66 @@ const UserModal = ({
             const newObj = {
                 ...pre,
                 [key]: value,
-            }
+            };
             return newObj;
         });
-    }
+    };
 
     const handleOnChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         handleUserInfoChange(name, value);
-    }
+    };
+
+    const handleOnFinish = async ({
+        firstName,
+        lastName,
+        password,
+        email,
+        phoneNumber,
+        roleId,
+    }: IUser) => {
+        setIsLoadingBtn(true);
+        await delay(1000);
+        if (isEdit) {
+            try {
+                await mUpdateUser({
+                    firstName,
+                    lastName,
+                    phoneNumber,
+                    roleId,
+                    id: user?.id,
+                }).unwrap();
+                setIsOpen(false);
+                toast.success("Update user successfully");
+                await refetchUsers();
+            } catch (error: any) {
+                toast.error(error.message);
+            }
+        } else {
+            try {
+                await mCreateUser({
+                    firstName,
+                    lastName,
+                    password,
+                    email,
+                    phoneNumber,
+                    roleId,
+                }).unwrap();
+                setIsOpen(false);
+                toast.success("Create user successfully");
+                await refetchUsers();
+            } catch (error: any) {
+                toast.error(error.message);
+            }
+        }
+
+        setIsLoadingBtn(false);
+    };
 
     useEffect(() => {
+        setIsOpenSb(isOpen);
         if (isOpen) {
+            form.resetFields();
             if (isEdit) {
                 setNewUserInfo(user);
                 form.setFieldsValue({
@@ -72,6 +135,8 @@ const UserModal = ({
                     email: "",
                     phoneNumber: "",
                     roleId: roles?.[0].id,
+                    password: "",
+                    confirm: "",
                 });
             }
         }
@@ -80,20 +145,27 @@ const UserModal = ({
     return (
         <Modal
             title={isEdit ? "Edit User" : "Add User"}
-            open={isOpen}
-            // className="text-center"
+            open={isOpenSb}
             onOk={handleOk}
             okText={isEdit ? "Save changes" : "Create"}
             onCancel={handleCancel}
-            okButtonProps={{ style: { backgroundColor: isDisabledSave && isEdit ?  "#ccc" : "var(--orange-4)" }, disabled: isDisabledSave && isEdit  }}
+            okButtonProps={{
+                style: {
+                    backgroundColor:
+                        isDisabledSave && isEdit ? "#ccc" : "var(--orange-4)",
+                },
+                disabled: isDisabledSave && isEdit,
+                loading: isLoadingBtn,
+            }}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
+            style={{ top: 0 }}
         >
             <Form
                 {...{
                     labelCol: {
                         xs: { span: 12 },
                         sm: { span: 12 },
-                        },
+                    },
                     wrapperCol: {
                         xs: { span: 12 },
                         sm: { span: 24 },
@@ -102,7 +174,7 @@ const UserModal = ({
                 layout="vertical"
                 form={form}
                 name="register"
-                // onFinish={handleOnFinish}
+                onFinish={handleOnFinish}
                 style={{ maxWidth: 600 }}
                 scrollToFirstError
             >
@@ -113,12 +185,16 @@ const UserModal = ({
                     initialValue={user?.firstName}
                     rules={[
                         {
-                        required: true,
-                        message: "Please input your first name!",
+                            required: true,
+                            message: "Please input your first name!",
                         },
                     ]}
-                    >
-                    <Input style={{  padding: "4px 10px" }} onChange={handleOnChangeInput} name="firstName"/>
+                >
+                    <Input
+                        style={{ padding: "4px 10px" }}
+                        onChange={handleOnChangeInput}
+                        name="firstName"
+                    />
                 </Form.Item>
                 <Form.Item
                     name="lastName"
@@ -126,12 +202,16 @@ const UserModal = ({
                     initialValue={user?.lastName}
                     rules={[
                         {
-                        required: true,
-                        message: "Please input your last name!",
+                            required: true,
+                            message: "Please input your last name!",
                         },
                     ]}
-                    >
-                    <Input style={{  padding: "4px 10px" }} onChange={handleOnChangeInput} name="lastName"/>
+                >
+                    <Input
+                        style={{ padding: "4px 10px" }}
+                        onChange={handleOnChangeInput}
+                        name="lastName"
+                    />
                 </Form.Item>
                 <Form.Item
                     name="phoneNumber"
@@ -143,42 +223,102 @@ const UserModal = ({
                             message: "Please input your phone number!",
                         },
                     ]}
-                    >
-                    <Input onChange={handleOnChangeInput} name="phoneNumber" style={{  padding: "4px 10px" }} />
+                >
+                    <Input
+                        onChange={handleOnChangeInput}
+                        name="phoneNumber"
+                        style={{ padding: "4px 10px" }}
+                    />
                 </Form.Item>
                 <Form.Item
                     name="email"
                     label="E-mail"
                     initialValue={user?.email}
-                    rules={isEdit ? [] : [
+                    rules={
+                        isEdit
+                            ? []
+                            : [
+                                  {
+                                      type: "email",
+                                      message:
+                                          "Please input your correct E-mail",
+                                  },
+                                  {
+                                      required: true,
+                                      message: "Please input your E-mail!",
+                                  },
+                              ]
+                    }
+                >
+                    <Input
+                        style={{ padding: "4px 10px" }}
+                        disabled={isEdit}
+                        onChange={handleOnChangeInput}
+                        name="email"
+                    />
+                </Form.Item>
+                <Form.Item
+                    hidden={isEdit}
+                    name="password"
+                    label="Password"
+                    rules={[
                         {
-                            type: "email",
-                            message: "Please input your correct E-mail",
+                            required: !isEdit,
+                            message: "Please input your password!",
                         },
                         {
-                            required: true,
-                            message: "Please input your E-mail!",
+                            validator: validatePassword,
                         },
                     ]}
                 >
-                    <Input style={{  padding: "4px 10px" }} disabled={isEdit} onChange={handleOnChangeInput} name="email" />
+                    <Input.Password />
                 </Form.Item>
                 <Form.Item
-                    name="roleId"
-                    label="Role"
-                    required
-                >
-                    <Select placement="topRight" onChange={(value) => handleUserInfoChange("roleId", value)}>
+                    hidden={isEdit}
+                    name="confirm"
+                    label="Confirm Password"
+                    dependencies={["password"]}
+                    rules={[
                         {
-                            roles?.map(role => (
-                                <Select.Option value={role.id} key={role.id}>{role.roleName}</Select.Option>
-                            ))
+                            required: !isEdit,
+                            message: "Please confirm your password!",
+                        },
+                        ({ getFieldValue }) => ({
+                            validator(_, value) {
+                                if (
+                                    !value ||
+                                    getFieldValue("password") === value
+                                ) {
+                                    return Promise.resolve();
+                                }
+                                return Promise.reject(
+                                    new Error(
+                                        "The two passwords that you entered do not match!"
+                                    )
+                                );
+                            },
+                        }),
+                    ]}
+                >
+                    <Input.Password />
+                </Form.Item>
+                <Form.Item name="roleId" label="Role" required>
+                    <Select
+                        placement="topRight"
+                        onChange={(value) =>
+                            handleUserInfoChange("roleId", value)
                         }
+                    >
+                        {roles?.map((role) => (
+                            <Select.Option value={role.id} key={role.id}>
+                                {role.roleName}
+                            </Select.Option>
+                        ))}
                     </Select>
                 </Form.Item>
             </Form>
         </Modal>
-    )
-}
+    );
+};
 
 export default UserModal;

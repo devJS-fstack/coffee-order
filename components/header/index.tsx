@@ -53,9 +53,7 @@ function checkActiveNavMobile(isActive: boolean, theme: any) {
 export default function Header(props: React.HTMLProps<HTMLDivElement>) {
     const [nav, setNav] = useState(navigation);
     const currentUser = useSelector(selectCurrentUser);
-    const isBaseAdmin = currentUser?.Role?.role === ROLES.SUPER_ADMIN;
     const { data: orderDetail  } = useNewOrderQuery({});
-    const [isAdmin, setIsAdmin] = useState(true);
     
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
@@ -68,6 +66,7 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
         setNav(stateNew)
     }
     const router = useRouter();
+    const isAdmin = router.pathname === "/administration";
     useEffect(() => {
         const navNew: any = navigation.map(item => {
             if (router.route === item.href) item.current = true
@@ -76,10 +75,6 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
         })
         setNav(navNew)
     }, [router.route])
-
-    useEffect(() => {
-        setIsAdmin(isBaseAdmin);
-    }, [isBaseAdmin])
 
     const handleSignOut = () => {
         store.dispatch(logOut());

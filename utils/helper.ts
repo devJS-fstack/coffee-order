@@ -65,3 +65,32 @@ export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export const diffThanCurrentDate = (date: string) =>
     date ? moment(date).diff(moment(), "days") : 0;
+
+export const validatePassword = (rule: any, value: string, callback: any) => {
+    if (value?.length > 0) {
+        if (value.length < 8) {
+            return Promise.reject(new Error("At least 8 characters"));
+        }
+
+        if (value.length > 15) {
+            return Promise.reject(new Error("Max 15 characters"));
+        }
+
+        if (!/(?=.*?[A-Z])/.test(value)) {
+            return Promise.reject(new Error("At least 1 upper-case character"));
+        }
+
+        if (!/(?=.*?[a-z])/.test(value)) {
+            return Promise.reject(new Error("At least 1 lower-case character"));
+        }
+
+        if (!/(?=.*?[0-9])/.test(value)) {
+            return Promise.reject(new Error("At least 1 number"));
+        }
+
+        if (!/(?=.*?[#?!@$%^&*-])/.test(value)) {
+            return Promise.reject(new Error("At least 1 special character"));
+        }
+    }
+    return Promise.resolve();
+};
