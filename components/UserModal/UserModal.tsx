@@ -1,8 +1,8 @@
-import { Modal, AutoComplete, Form, Input, Button, } from "antd";
+import { Modal, AutoComplete, Form, Input, Button, Select, } from "antd";
 import { useState, Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { getListAddress } from "../../apis/coffee-house";
-import { IUser } from "../../apis/user";
-import { isEqual } from "lodash";
+import { IUser, useRolesQuery } from "../../apis/user";
+import { isEmpty, isEqual, toNumber } from "lodash";
 
 export interface IDeliveryInfo {
     titleAddress: string;
@@ -16,14 +16,17 @@ const UserModal = ({
     setIsOpen,
     user,
     setUserInfo,
+    isEdit = false
  }: { 
     isOpen: boolean,
+    isEdit?: boolean
     setIsOpen: Dispatch<SetStateAction<boolean>>,
     setUserInfo: Dispatch<SetStateAction<IUser | undefined>>
     user?: IUser
 }) => {
     const [form] = Form.useForm();
     const [newUserInfo, setNewUserInfo] = useState(user);
+    const { data: roles } = useRolesQuery({});
     const isDisabledSave = useMemo(() => {
         return isEqual(user, newUserInfo);
       }, [user, newUserInfo]);
@@ -52,24 +55,37 @@ const UserModal = ({
     }
 
     useEffect(() => {
-        setNewUserInfo(user);
-        form.setFieldsValue({
-            firstName: user?.firstName,
-            lastName: user?.lastName,
-            email: user?.email,
-            phoneNumber: user?.phoneNumber,
-        })
+        if (isOpen) {
+            if (isEdit) {
+                setNewUserInfo(user);
+                form.setFieldsValue({
+                    firstName: user?.firstName,
+                    lastName: user?.lastName,
+                    email: user?.email,
+                    phoneNumber: user?.phoneNumber,
+                    roleId: toNumber(user?.roleId),
+                });
+            } else {
+                form.setFieldsValue({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    phoneNumber: "",
+                    roleId: roles?.[0].id,
+                });
+            }
+        }
     }, [user, isOpen]);
 
     return (
         <Modal
-            title="Edit User"
+            title={isEdit ? "Edit User" : "Add User"}
             open={isOpen}
             // className="text-center"
             onOk={handleOk}
-            okText="Save Changes"
+            okText={isEdit ? "Save changes" : "Create"}
             onCancel={handleCancel}
-            okButtonProps={{ style: { backgroundColor: isDisabledSave ?  "#ccc" : "var(--orange-4)" }, disabled: isDisabledSave }}
+            okButtonProps={{ style: { backgroundColor: isDisabledSave && isEdit ?  "#ccc" : "var(--orange-4)" }, disabled: isDisabledSave && isEdit  }}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
         >
             <Form
@@ -101,9 +117,8 @@ const UserModal = ({
                         message: "Please input your first name!",
                         },
                     ]}
-                    hasFeedback
                     >
-                    <Input onChange={handleOnChangeInput} name="firstName"/>
+                    <Input style={{  padding: "4px 10px" }} onChange={handleOnChangeInput} name="firstName"/>
                 </Form.Item>
                 <Form.Item
                     name="lastName"
@@ -115,9 +130,8 @@ const UserModal = ({
                         message: "Please input your last name!",
                         },
                     ]}
-                    hasFeedback
                     >
-                    <Input onChange={handleOnChangeInput} name="lastName"/>
+                    <Input style={{  padding: "4px 10px" }} onChange={handleOnChangeInput} name="lastName"/>
                 </Form.Item>
                 <Form.Item
                     name="phoneNumber"
@@ -129,15 +143,14 @@ const UserModal = ({
                             message: "Please input your phone number!",
                         },
                     ]}
-                    hasFeedback
                     >
-                    <Input onChange={handleOnChangeInput} name="phoneNumber" style={{ width: "100%" }} />
+                    <Input onChange={handleOnChangeInput} name="phoneNumber" style={{  padding: "4px 10px" }} />
                 </Form.Item>
                 <Form.Item
                     name="email"
                     label="E-mail"
                     initialValue={user?.email}
-                    rules={[
+                    rules={isEdit ? [] : [
                         {
                             type: "email",
                             message: "Please input your correct E-mail",
@@ -147,9 +160,21 @@ const UserModal = ({
                             message: "Please input your E-mail!",
                         },
                     ]}
-                    hasFeedback
                 >
-                    <Input onChange={handleOnChangeInput} name="email" />
+                    <Input style={{  padding: "4px 10px" }} disabled={isEdit} onChange={handleOnChangeInput} name="email" />
+                </Form.Item>
+                <Form.Item
+                    name="roleId"
+                    label="Role"
+                    required
+                >
+                    <Select placement="topRight" onChange={(value) => handleUserInfoChange("roleId", value)}>
+                        {
+                            roles?.map(role => (
+                                <Select.Option value={role.id} key={role.id}>{role.roleName}</Select.Option>
+                            ))
+                        }
+                    </Select>
                 </Form.Item>
             </Form>
         </Modal>

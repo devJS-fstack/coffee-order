@@ -81,3 +81,9 @@ svg {
     color: #fff !important;
     border-color: transparent;
 }
+
+.hover-btn-custom:hover {
+    background-color: #d2832fb3 !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}

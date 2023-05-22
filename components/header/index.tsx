@@ -1,5 +1,5 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useEffect, useState, useContext } from "react";
+import { Fragment, useEffect, useState, useContext, useMemo } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
 import Link from "next/link";
@@ -13,7 +13,8 @@ import { isEmpty } from "lodash";
 import { store } from "../../app/store";
 import { Badge } from "antd";
 import { useNewOrderQuery } from "../../apis/order";
-
+import { ROLES } from "../../utils/variable";
+import { AiOutlineUserAdd } from "react-icons/ai"
 
 type Nav = {
     id: number;
@@ -49,11 +50,12 @@ function checkActiveNavMobile(isActive: boolean, theme: any) {
 }
 
 
-export default function Header() {
+export default function Header(props: React.HTMLProps<HTMLDivElement>) {
     const [nav, setNav] = useState(navigation);
     const currentUser = useSelector(selectCurrentUser);
-    // console.log("currentUser: ", currentUser);
+    const isBaseAdmin = currentUser?.Role?.role === ROLES.SUPER_ADMIN;
     const { data: orderDetail  } = useNewOrderQuery({});
+    const [isAdmin, setIsAdmin] = useState(true);
     
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
@@ -75,13 +77,17 @@ export default function Header() {
         setNav(navNew)
     }, [router.route])
 
+    useEffect(() => {
+        setIsAdmin(isBaseAdmin);
+    }, [isBaseAdmin])
+
     const handleSignOut = () => {
         store.dispatch(logOut());
         window.location.reload();
     }
 
     return (
-        <>
+        <div className={isAdmin ? "hidden": ""}>
             <Head>
                 <title>My Fullstack Blog</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -93,7 +99,7 @@ export default function Header() {
             <Disclosure as="nav" className="bg-header">
                 {({ open }: any) => (
                     <>
-                        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                        <div className={`max-w-7xl mx-auto px-2 sm:px-6 lg:px-8`}>
                             <div className="relative flex items-center justify-between h-20">
                                 <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                                     {/* Mobile menu button*/}
@@ -201,17 +207,7 @@ export default function Header() {
                                                     </>
                                                     :
                                                     <>
-                                                        <Menu.Item>
-                                                            {({ active }: any) => (
-                                                                <div
-                                                                className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
-                                                                >
-                                                                    <FieldTimeOutlined className="mr-2" />
-                                                                    <span>Order Lookup</span>
-                                                                </div>
-                                                            )}
-                                                        </Menu.Item> 
-                                                        <Menu.Item>
+                                                    <Menu.Item>
                                                             {({ active }: any) => (
                                                                     <div 
                                                                     className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
@@ -219,6 +215,17 @@ export default function Header() {
                                                                     >
                                                                         <LoginOutlined className="mr-2" />
                                                                         <span>Sign In</span>
+                                                                    </div>
+                                                            )}
+                                                    </Menu.Item>
+                                                    <Menu.Item>
+                                                            {({ active }: any) => (
+                                                                    <div 
+                                                                    className={classNames(active ? "bg-gray-100" : "", "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer")}
+                                                                    onClick={() => { router.push("sign-up") }}
+                                                                    >
+                                                                        <AiOutlineUserAdd className="mr-2" />
+                                                                        <span>Sign Up</span>
                                                                     </div>
                                                             )}
                                                         </Menu.Item>
@@ -267,6 +274,6 @@ export default function Header() {
                 )
                 }
             </Disclosure >
-        </>
+        </div>
     )
 }

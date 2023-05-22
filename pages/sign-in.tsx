@@ -10,6 +10,7 @@ import { delay, isJson } from "../utils/helper";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { isEmpty, toNumber } from "lodash";
+import { ROLES } from "../utils/variable";
 
 export default function LoginComponent() {
     const [form] = Form.useForm();
@@ -32,6 +33,10 @@ export default function LoginComponent() {
                 autoClose: 3000, 
                 closeButton: true 
             });
+            if (data.Role?.role === ROLES.SUPER_ADMIN) {
+                router.push("/administration")
+                return;
+            }
             const orderInfo = isJson(sessionStorage.getItem("orderInfo")) ? JSON.parse(sessionStorage.getItem("orderInfo") as string) : {};
             if (!isEmpty(orderInfo)) {
                 await addOrder({

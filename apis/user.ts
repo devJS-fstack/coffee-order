@@ -10,6 +10,12 @@ import { store } from "../app/store";
 
 const basePathUser = "users";
 
+export interface IRole {
+    id: number;
+    role: string;
+    roleName: string;
+}
+
 export type IUser = {
     id?: number;
     email?: string;
@@ -19,13 +25,9 @@ export type IUser = {
     accessToken?: string;
     phoneNumber?: string;
     prefixPhone?: string;
-    roleId?: string;
+    roleId?: number;
     status?: string;
-    Role?: {
-        id: number;
-        role: string;
-        roleName: string;
-    };
+    Role?: IRole;
 };
 
 export const authApiSlice = apiSlice.injectEndpoints({
@@ -110,6 +112,15 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 return data.data;
             },
         }),
+        roles: builder.query({
+            query: () => ({
+                url: `${basePathUser}/roles`,
+                method: "GET",
+            }),
+            transformResponse: (data: { data: IRole[]; message: string }) => {
+                return data.data;
+            },
+        }),
     }),
 });
 
@@ -118,4 +129,5 @@ export const {
     useRegisMutation,
     useUpdateProfileMutation,
     useUsersQuery,
+    useRolesQuery,
 } = authApiSlice;
