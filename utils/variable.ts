@@ -10,3 +10,13 @@ export const NOTE_ICON =
 export const variables = {
     cryptoAesKey: "58re97235srasdf24sdfaa2fe03ec434c0a911182",
 };
+
+export const STATUS_COLOR: any = {
+    ACTIVE: "green",
+    DISABLED: "volcano",
+};
+
+export const ROLES = {
+    USER: "USER",
+    SUPER_ADMIN: "SUPER_ADMIN",
+};

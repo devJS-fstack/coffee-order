@@ -19,6 +19,13 @@ export type IUser = {
     accessToken?: string;
     phoneNumber?: string;
     prefixPhone?: string;
+    roleId?: string;
+    status?: string;
+    Role?: {
+        id: number;
+        role: string;
+        roleName: string;
+    };
 };
 
 export const authApiSlice = apiSlice.injectEndpoints({
@@ -94,8 +101,21 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 return user;
             },
         }),
+        users: builder.query({
+            query: () => ({
+                url: `${basePathUser}`,
+                method: "GET",
+            }),
+            transformResponse: (data: { data: IUser[]; message: string }) => {
+                return data.data;
+            },
+        }),
     }),
 });
 
-export const { useLoginMutation, useRegisMutation, useUpdateProfileMutation } =
-    authApiSlice;
+export const {
+    useLoginMutation,
+    useRegisMutation,
+    useUpdateProfileMutation,
+    useUsersQuery,
+} = authApiSlice;

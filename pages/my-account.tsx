@@ -48,7 +48,7 @@ const ProfilePage = () => {
     setBtnLoading(true);
     try {
         await updateProfile({
-            id: currentUser?.id,
+            id: currentUser?.id || 0,
             firstName,
             lastName,
             phoneNumber,

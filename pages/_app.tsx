@@ -11,11 +11,11 @@ import { get } from "lodash";
 import { encodeAes } from "../utils/helper";
 import { variables } from "../utils/variable";
 import { selectCurrentUser } from "../auth/authSlice";
+import Main from "../components/_main";
+import { useRouter } from "next/router";
 
 
 function MyApp({ Component, pageProps }: AppProps) {
-  // const currentUser = useSelector(selectCurrentUser);
-  // console.log("Current: ", currentUser);
   useEffect(() => {
     if (typeof window !== "undefined") {
       store.subscribe(() => {
@@ -38,9 +38,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   }, [])
   return (
       <Provider store={store}>
-        <Header></Header>
-        <h1 style={{ display: "none" }}>Dev Nguyen Vercel Fullstack Blog</h1>
-        <Component {...pageProps} />
+          <Main Component={Component} pageProps={pageProps} />
       </Provider>
   )
 }
