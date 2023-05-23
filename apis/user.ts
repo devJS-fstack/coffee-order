@@ -1,12 +1,7 @@
 import { apiSlice } from "./index";
-import {
-    setCredentials,
-    logOut,
-    selectCurrentUser,
-    selectCurrentToken,
-    setCurrentUser,
-} from "../auth/authSlice";
+import { setCredentials, logOut, setCurrentUser } from "../auth/authSlice";
 import { store } from "../app/store";
+import { STATUS_USERS } from "../utils/variable";
 
 const basePathUser = "users";
 
@@ -103,7 +98,10 @@ export const authApiSlice = apiSlice.injectEndpoints({
             },
             transformResponse: (data: { data: IUser; message: string }) => {
                 const { data: user } = data || {};
-                if (user) {
+                const { auth } = store.getState();
+                const { user: currentUser } = auth;
+                const isCurrent = user.id && user.id === currentUser?.id;
+                if (isCurrent) {
                     store.dispatch(setCurrentUser({ user }));
                 }
                 return user;
@@ -141,6 +139,38 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 };
             },
         }),
+        updateStatus: builder.mutation({
+            query: ({
+                status,
+                userId,
+            }: {
+                userId: number;
+                status: string;
+            }) => ({
+                url: `${basePathUser}/${userId}/status/${status}`,
+                method: "PATCH",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
+        deleteUser: builder.mutation({
+            query: ({ userId }: { userId: number }) => ({
+                url: `${basePathUser}/${userId}`,
+                method: "DELETE",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
     }),
 });
 
@@ -151,4 +181,6 @@ export const {
     useUpdateProfileMutation,
     useUsersQuery,
     useRolesQuery,
+    useUpdateStatusMutation,
+    useDeleteUserMutation,
 } = authApiSlice;

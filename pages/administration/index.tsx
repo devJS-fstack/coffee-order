@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import NavigationAdmin from "../../components/Navigation";
 import UserPage from "./users";
-import ProductAdmin from "./product";
+import ProductAdmin from "./service/product";
 import CustomSpin from "../../components/Spin";
 import { delay } from "../../utils/helper";
 import { ToastContainer } from "react-toastify";
+import CategoryAdmin from "./service/category";
+import ToppingAdmin from "./service/topping";
 
 const components = (key: string, args: any) => {
     switch (key) {
@@ -12,8 +14,14 @@ const components = (key: string, args: any) => {
             return <UserPage {...args} />;
         case "product":
             return <ProductAdmin {...args} />;
+        case "category":
+            return <CategoryAdmin {...args} />;
+        case "product":
+            return <ProductAdmin {...args} />;
+        case "topping":
+            return <ToppingAdmin {...args} />;
         default:
-            break;
+            return <UserPage {...args} />;
     }
 };
 

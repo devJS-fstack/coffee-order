@@ -9,14 +9,14 @@ const currentAuth: any =
     typeof window !== "undefined"
         ? decodeAes(
               localStorage.getItem("accessToken") || {},
-              variables.cryptoAesKey
+              variables.cryptoAesKey,
           )
         : null;
 const currentUser: any =
     typeof window !== "undefined"
         ? decodeAes(
               localStorage.getItem("currentUser") || {},
-              variables.cryptoAesKey
+              variables.cryptoAesKey,
           )
         : null;
 

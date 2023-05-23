@@ -1,7 +1,7 @@
 const ProductAdmin = ({}: {}) => (
     <div className="w-full py-4">
-        <span>Hello</span>
+        <span>Product</span>
     </div>
-)
+);
 
-export default ProductAdmin
+export default ProductAdmin;

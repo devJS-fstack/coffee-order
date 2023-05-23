@@ -1,14 +1,21 @@
 import { Avatar, Button, Dropdown, MenuProps, Tag } from "antd";
-import { useUsersQuery } from "../../apis/user";
+import {
+    useDeleteUserMutation,
+    useUpdateStatusMutation,
+    useUsersQuery,
+} from "../../apis/user";
 import TableV1 from "../../components/TableV1";
-import { STATUS_COLOR } from "../../utils/variable";
+import { STATUS_COLOR, STATUS_USERS } from "../../utils/variable";
 import { FiMoreVertical, FiTrash } from "react-icons/fi";
 import { GrStatusDisabledSmall } from "react-icons/gr";
-import { BsFillPencilFill } from "react-icons/bs";
+import { BsFillPencilFill, BsCaretRightFill } from "react-icons/bs";
 import { RiMoreFill } from "react-icons/ri";
 import UserModal from "../../components/UserModal/UserModal";
 import { useEffect, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
+import { delay } from "../../utils/helper";
+import { toast } from "react-toastify";
 
 const UserPage = ({ collapsed }: { collapsed: boolean }) => {
     const {
@@ -17,19 +24,69 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
         refetch: refetchUsers,
     } = useUsersQuery({});
     const [isOpenUserModal, setIsOpenUserModal] = useState(false);
+    const [isOpenConfirmActive, setIsOpenConfirmActive] = useState(false);
+    const [isOpenConfirmDelete, setIsOpenConfirmDelete] = useState(false);
+    const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
+    const [mUpdateStatus] = useUpdateStatusMutation();
+    const [mDeleteUser] = useDeleteUserMutation();
     const [userInfo, setUserInfo] = useState(users?.[0]);
-
-    const handleOnClickModify = (id: number) => {
+    const [isActiveCurrUser, setIsActiveCurrUser] = useState(false);
+    const commonHandler = (id: number) => {
         const user = users?.find((user) => user.id === id);
         setIsEdit(true);
-        setIsOpenUserModal(true);
         setUserInfo(user);
+    };
+
+    const handleOnClickModify = (id: number) => {
+        commonHandler(id);
+        setIsOpenUserModal(true);
+    };
+
+    const handleCancelConfirmActive = () => {
+        setIsOpenConfirmActive(false);
+    };
+
+    const handleOnOkActive = async () => {
+        setIsLoadingBtn(true);
+        await delay(1000);
+        const status = isActiveCurrUser
+            ? STATUS_USERS.DISABLED
+            : STATUS_USERS.ACTIVE;
+        try {
+            await mUpdateStatus({ status, userId: userInfo?.id || 0 }).unwrap();
+            await refetchUsers();
+            toast.success(
+                `${isActiveCurrUser ? "Disable" : "Enable"} user successfully`,
+            );
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+        setIsLoadingBtn(false);
+        setIsOpenConfirmActive(false);
+    };
+
+    const handleOnDeleteUser = async () => {
+        setIsLoadingBtn(true);
+        await delay(1000);
+        try {
+            await mDeleteUser({ userId: userInfo?.id || 0 }).unwrap();
+            toast.success(`Delete user successfully`);
+            await refetchUsers();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+        setIsLoadingBtn(false);
+        setIsOpenConfirmDelete(false);
     };
 
     useEffect(() => {
         refetchUsers();
     }, []);
+
+    useEffect(() => {
+        setIsActiveCurrUser(userInfo?.status === STATUS_USERS.ACTIVE);
+    }, [userInfo]);
 
     return (
         <div className="w-full py-4">
@@ -40,6 +97,49 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                 setIsOpen={setIsOpenUserModal}
                 isEdit={isEdit}
                 refetchUsers={refetchUsers}
+            />
+            <ConfirmModal
+                isOpen={isOpenConfirmActive}
+                handleCancel={handleCancelConfirmActive}
+                handleOk={handleOnOkActive}
+                title={`Confirm ${isActiveCurrUser ? "Disable" : "Enable"}`}
+                okText={isActiveCurrUser ? "Disable" : "Enable"}
+                okButtonProps={{ loading: isLoadingBtn }}
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>
+                            Are you sure you want to{" "}
+                            {isActiveCurrUser ? "disable" : "enable"} user{" "}
+                            <span className="font-bold">
+                                {userInfo?.firstName} {userInfo?.lastName}
+                            </span>
+                        </span>
+                    </div>
+                }
+            />
+            <ConfirmModal
+                okText="Remove"
+                okButtonProps={{ loading: isLoadingBtn }}
+                isOpen={isOpenConfirmDelete}
+                title="Confirm Remove Order"
+                handleCancel={() => {
+                    setIsOpenConfirmDelete(false);
+                }}
+                handleOk={handleOnDeleteUser}
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>
+                            Are you sure you want to delete user{" "}
+                            <span className="font-bold">
+                                {userInfo?.firstName} {userInfo?.lastName}
+                            </span>
+                        </span>
+                        <span style={{ color: "#ef4444" }}>
+                            This action cannot be undone. Are you sure to
+                            proceed?
+                        </span>
+                    </div>
+                }
             />
             <span className="flex justify-end pr-4 pb-4">
                 <Button
@@ -117,7 +217,9 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                         title: "Action",
                         dataIndex: "id",
                         key: "id",
-                        render: (value, _) => {
+                        render: (value, record) => {
+                            const { status } = record;
+                            const isActive = status === STATUS_USERS.ACTIVE;
                             return (
                                 <Dropdown
                                     menu={{
@@ -129,7 +231,7 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                         className="flex justify-space-between items-center gap-2"
                                                         onClick={() => {
                                                             handleOnClickModify(
-                                                                value
+                                                                value,
                                                             );
                                                         }}
                                                     >
@@ -141,20 +243,53 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                             {
                                                 key: "2",
                                                 label: (
-                                                    <span className="flex justify-space-between items-center gap-2">
-                                                        <GrStatusDisabledSmall
-                                                            style={{
-                                                                color: "#F87171",
-                                                            }}
-                                                        />
-                                                        <span>Disabled</span>
+                                                    <span
+                                                        className="flex justify-space-between items-center gap-2"
+                                                        onClick={() => {
+                                                            commonHandler(
+                                                                value,
+                                                            );
+                                                            setIsOpenConfirmActive(
+                                                                true,
+                                                            );
+                                                        }}
+                                                    >
+                                                        {isActive ? (
+                                                            <GrStatusDisabledSmall
+                                                                style={{
+                                                                    color: "#F87171",
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <BsCaretRightFill
+                                                                style={{
+                                                                    color: "green",
+                                                                    fontSize: 17,
+                                                                }}
+                                                            />
+                                                        )}
+                                                        <span>
+                                                            {isActive
+                                                                ? "Disable"
+                                                                : "Enable"}
+                                                        </span>
                                                     </span>
                                                 ),
                                             },
                                             {
                                                 key: "3",
                                                 label: (
-                                                    <span className="flex justify-space-between items-center gap-2">
+                                                    <span
+                                                        onClick={() => {
+                                                            commonHandler(
+                                                                value,
+                                                            );
+                                                            setIsOpenConfirmDelete(
+                                                                true,
+                                                            );
+                                                        }}
+                                                        className="flex justify-space-between items-center gap-2"
+                                                    >
                                                         <FiTrash color="red" />
                                                         <span>Delete</span>
                                                     </span>
@@ -176,6 +311,17 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                 dataSource={users}
                 loading={isFetching}
                 rowKey={"email"}
+                pagination={{
+                    className: "pr-6",
+                    total: users?.length || 0,
+                    pageSize: 10,
+                    showTotal: (total) => (
+                        <span className="antd-total-item">
+                            Total {total} user(s)
+                        </span>
+                    ),
+                    showQuickJumper: true,
+                }}
             />
         </div>
     );

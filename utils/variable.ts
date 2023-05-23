@@ -20,3 +20,8 @@ export const ROLES = {
     USER: "USER",
     SUPER_ADMIN: "SUPER_ADMIN",
 };
+
+export const STATUS_USERS = {
+    ACTIVE: "ACTIVE",
+    DISABLED: "DISABLED",
+};

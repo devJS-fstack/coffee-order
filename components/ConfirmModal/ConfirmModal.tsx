@@ -20,7 +20,7 @@ const ConfirmModal = ({
     handleOk: (...args: any) => Promise<void>;
     handleCancel: () => void;
     title: string;
-    children: any;
+    children?: any;
     okText?: string;
     okButtonProps?: ButtonProps;
 }) => {

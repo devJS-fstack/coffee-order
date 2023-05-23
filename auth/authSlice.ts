@@ -9,7 +9,7 @@ const authSlice = createSlice({
             state,
             action: {
                 payload: { user: IUser | null; accessToken: string | null };
-            }
+            },
         ) => {
             const { user, accessToken } = action.payload;
             state.user = user;
@@ -27,7 +27,7 @@ const authSlice = createSlice({
             state,
             action: {
                 payload: { user: IUser | null };
-            }
+            },
         ) => {
             const { user } = action.payload;
             state.user = user;
