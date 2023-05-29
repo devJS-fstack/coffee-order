@@ -1,7 +1,9 @@
+import { RcFile } from "antd/es/upload";
 import cryptoJs from "crypto-js";
 import dayjs from "dayjs";
 import { uniq } from "lodash";
 import moment from "moment";
+import { toast } from "react-toastify";
 
 export const unavailableHours = [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
 
@@ -93,4 +95,17 @@ export const validatePassword = (rule: any, value: string, callback: any) => {
         }
     }
     return Promise.resolve();
+};
+
+export const getBase64 = (callback: (url: string) => void) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result as string));
+};
+
+export const checkFileCondition = (file: RcFile) => {
+    const isLt2M = file.size / 1024 / 1024 < 1;
+    if (!isLt2M) {
+        toast.error("Image must smaller than 1MB!");
+    }
+    return isLt2M;
 };

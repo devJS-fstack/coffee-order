@@ -11,7 +11,7 @@ export const variables = {
     cryptoAesKey: "58re97235srasdf24sdfaa2fe03ec434c0a911182",
 };
 
-export const STATUS_COLOR: any = {
+export const STATUS_COLOR = {
     ACTIVE: "green",
     DISABLED: "volcano",
 };

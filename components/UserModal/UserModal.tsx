@@ -258,7 +258,7 @@ const UserModal = ({
                     />
                 </Form.Item>
                 <Form.Item
-                    hidden={isEdit}
+                    // hidden={isEdit}
                     name="password"
                     label="Password"
                     rules={[
@@ -274,7 +274,7 @@ const UserModal = ({
                     <Input.Password />
                 </Form.Item>
                 <Form.Item
-                    hidden={isEdit}
+                    // hidden={isEdit}
                     name="confirm"
                     label="Confirm Password"
                     dependencies={["password"]}

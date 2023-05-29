@@ -40,9 +40,9 @@ const Admin = () => {
     return (
         <div className="flex">
             <ToastContainer
-                position="top-right"
+                position="top-center"
                 autoClose={2000}
-                hideProgressBar={false}
+                hideProgressBar={true}
                 newestOnTop={false}
                 closeOnClick
                 rtl={false}

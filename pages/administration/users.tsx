@@ -57,7 +57,7 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
             await mUpdateStatus({ status, userId: userInfo?.id || 0 }).unwrap();
             await refetchUsers();
             toast.success(
-                `${isActiveCurrUser ? "Disable" : "Enable"} user successfully`,
+                `${isActiveCurrUser ? "Disable" : "Enable"} user successfully`
             );
         } catch (error: any) {
             toast.error(error.message);
@@ -209,7 +209,15 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                         key: "status",
                         render: (value, _) => {
                             return (
-                                <Tag color={STATUS_COLOR[value]}>{value}</Tag>
+                                <Tag
+                                    color={
+                                        STATUS_COLOR[
+                                            value as keyof typeof STATUS_COLOR
+                                        ]
+                                    }
+                                >
+                                    {value}
+                                </Tag>
                             );
                         },
                     },
@@ -231,7 +239,7 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                         className="flex justify-space-between items-center gap-2"
                                                         onClick={() => {
                                                             handleOnClickModify(
-                                                                value,
+                                                                value
                                                             );
                                                         }}
                                                     >
@@ -247,10 +255,10 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                         className="flex justify-space-between items-center gap-2"
                                                         onClick={() => {
                                                             commonHandler(
-                                                                value,
+                                                                value
                                                             );
                                                             setIsOpenConfirmActive(
-                                                                true,
+                                                                true
                                                             );
                                                         }}
                                                     >
@@ -282,10 +290,10 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                     <span
                                                         onClick={() => {
                                                             commonHandler(
-                                                                value,
+                                                                value
                                                             );
                                                             setIsOpenConfirmDelete(
-                                                                true,
+                                                                true
                                                             );
                                                         }}
                                                         className="flex justify-space-between items-center gap-2"
@@ -314,13 +322,14 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                 pagination={{
                     className: "pr-6",
                     total: users?.length || 0,
-                    pageSize: 10,
+                    defaultPageSize: 10,
                     showTotal: (total) => (
                         <span className="antd-total-item">
                             Total {total} user(s)
                         </span>
                     ),
                     showQuickJumper: true,
+                    showSizeChanger: true,
                 }}
             />
         </div>

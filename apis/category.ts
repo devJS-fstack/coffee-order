@@ -7,13 +7,14 @@ export type ICategory = {
     nameCategory: string;
     favIcon: string;
     description: string;
+    enable?: boolean;
 };
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         categories: builder.query({
-            query: () => ({
-                url: `${basePath}`,
+            query: ({ enable = false }: { enable?: boolean }) => ({
+                url: `${basePath}?enable=${enable}`,
                 method: "GET",
             }),
             transformResponse(
@@ -24,7 +25,39 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                 return baseQueryReturnValue?.data;
             },
         }),
+        createCategory: builder.mutation({
+            query: (payload: ICategory) => ({
+                url: `${basePath}`,
+                method: "POST",
+                body: payload,
+            }),
+        }),
+        updateCategory: builder.mutation({
+            query: (payload: { formData: FormData; id: number }) => ({
+                url: `${basePath}/${payload.id}`,
+                method: "PUT",
+                body: payload.formData,
+            }),
+        }),
+        updateStatusCategory: builder.mutation({
+            query: ({ status, id }: { id: number; status: string }) => ({
+                url: `${basePath}/${id}/status/${status}`,
+                method: "PATCH",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
     }),
 });
 
-export const { useCategoriesQuery } = categoryApiSlice;
+export const {
+    useCategoriesQuery,
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useUpdateStatusCategoryMutation,
+} = categoryApiSlice;

@@ -9,6 +9,7 @@ export type IProduct = {
     description: string;
     categoryId: number;
     price: number;
+    sizes?: ISizeProduct[];
 };
 
 export type ITopping = {
@@ -21,6 +22,7 @@ export type ISizeProduct = {
     id: number;
     size: string;
     price: number;
+    name?: string;
 };
 
 export const productApiSlice = apiSlice.injectEndpoints({
@@ -80,7 +82,30 @@ export const productApiSlice = apiSlice.injectEndpoints({
                 };
             },
         }),
+        createProduct: builder.mutation({
+            query: (payload: FormData) => {
+                return {
+                    url: `${basePath}`,
+                    method: "POST",
+                    body: payload,
+                };
+            },
+        }),
+        updateProduct: builder.mutation({
+            query: ({ payload, id }: { payload: FormData; id: number }) => {
+                return {
+                    url: `${basePath}/${id}`,
+                    method: "PUT",
+                    body: payload,
+                };
+            },
+        }),
     }),
 });
 
-export const { useProductsQuery, useProductQuery } = productApiSlice;
+export const {
+    useProductsQuery,
+    useProductQuery,
+    useCreateProductMutation,
+    useUpdateProductMutation,
+} = productApiSlice;

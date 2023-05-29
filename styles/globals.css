@@ -95,3 +95,7 @@ svg {
     margin-right: 8px;
     vertical-align: middle;
 }
+
+.coffee-dragger button {
+    background-color: transparent;
+}
