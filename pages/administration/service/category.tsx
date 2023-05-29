@@ -2,6 +2,7 @@ import { Avatar, Button, Dropdown, Tag } from "antd";
 import {
     ICategory,
     useCategoriesQuery,
+    useDeleteCategoryMutation,
     useUpdateStatusCategoryMutation,
 } from "../../../apis/category";
 import TableV1 from "../../../components/TableV1";
@@ -24,10 +25,27 @@ const CategoryAdmin = ({}: {}) => {
         refetch: refetchCategories,
     } = useCategoriesQuery({});
     const [mUpdateStatus] = useUpdateStatusCategoryMutation();
+    const [mDeleteCategory] = useDeleteCategoryMutation();
     const [isEdit, setIsEdit] = useState(false);
     const [isOpenCategoryModal, setIsOpenCategoryModal] = useState(false);
     const [category, setCategory] = useState({} as ICategory);
     const [isOpenConfirmActive, setIsOpenConfirmActive] = useState(false);
+    const [isOpenConfirmDelete, setIsOpenConfirmDelete] = useState(false);
+
+    const handleOnDelete = async () => {
+        try {
+            await mDeleteCategory({ categoryId: category.id }).unwrap();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+        toast.success("Delete category successfully.");
+        setIsOpenConfirmDelete(false);
+        await refetchCategories();
+    };
+
+    const handleOnCancelDelete = () => {
+        setIsOpenConfirmDelete(false);
+    };
 
     const handleCancelConfirmActive = () => {
         setIsOpenConfirmActive(false);
@@ -43,7 +61,7 @@ const CategoryAdmin = ({}: {}) => {
             toast.success(
                 `${
                     category.enable ? "Disable" : "Enable"
-                } category successfully`
+                } category successfully`,
             );
         } catch (error: any) {
             toast.error(error.message);
@@ -75,6 +93,24 @@ const CategoryAdmin = ({}: {}) => {
                         <span>
                             Are you sure you want to{" "}
                             {category.enable ? "disable" : "enable"} category{" "}
+                            <span className="font-bold">
+                                {category.nameCategory}
+                            </span>{" "}
+                            ?
+                        </span>
+                    </div>
+                }
+            />
+            <ConfirmModal
+                isOpen={isOpenConfirmDelete}
+                handleCancel={handleOnCancelDelete}
+                handleOk={handleOnDelete}
+                title="Confirm Delete"
+                okText="Delete"
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>
+                            Are you sure you want to delete category{" "}
                             <span className="font-bold">
                                 {category.nameCategory}
                             </span>{" "}
@@ -194,7 +230,7 @@ const CategoryAdmin = ({}: {}) => {
                                                             setIsEdit(true);
                                                             setCategory(record);
                                                             setIsOpenCategoryModal(
-                                                                true
+                                                                true,
                                                             );
                                                         }}
                                                     >
@@ -211,7 +247,7 @@ const CategoryAdmin = ({}: {}) => {
                                                         onClick={() => {
                                                             setCategory(record);
                                                             setIsOpenConfirmActive(
-                                                                true
+                                                                true,
                                                             );
                                                         }}
                                                     >
@@ -242,12 +278,10 @@ const CategoryAdmin = ({}: {}) => {
                                                 label: (
                                                     <span
                                                         onClick={() => {
-                                                            // commonHandler(
-                                                            //     value
-                                                            // );
-                                                            // setIsOpenConfirmDelete(
-                                                            //     true
-                                                            // );
+                                                            setCategory(record);
+                                                            setIsOpenConfirmDelete(
+                                                                true,
+                                                            );
                                                         }}
                                                         className="flex justify-space-between items-center gap-2"
                                                     >
@@ -258,7 +292,7 @@ const CategoryAdmin = ({}: {}) => {
                                             },
                                         ],
                                     }}
-                                    placement="topRight"
+                                    placement="bottom"
                                     className="cursor-pointer"
                                 >
                                     <span>

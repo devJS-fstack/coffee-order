@@ -951,3 +951,12 @@
     font-weight: 600;
     color: var(--blue);
 }
+
+.tch-product__card.disabled {
+    background: #d4b5b5;
+    color: #fff;
+}
+
+.tch-product__card.disabled .tch-product-content__title {
+    color: #fff;
+}

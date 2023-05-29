@@ -9,6 +9,7 @@ export type IProduct = {
     description: string;
     categoryId: number;
     price: number;
+    enable?: boolean;
     sizes?: ISizeProduct[];
 };
 
@@ -32,15 +33,17 @@ export const productApiSlice = apiSlice.injectEndpoints({
                 categoryId,
                 limit = 12,
                 pageNumber = 1,
+                enable,
             }: {
                 categoryId: number;
                 limit?: number;
                 pageNumber?: number;
+                enable?: boolean;
             }) => {
                 const offset = (pageNumber - 1) * limit;
 
                 return {
-                    url: `${basePath}?categoryId=${categoryId}&limit=${limit}&offset=${offset}`,
+                    url: `${basePath}?categoryId=${categoryId}&limit=${limit}&offset=${offset}&enable=${enable}`,
                     method: "GET",
                 };
             },
@@ -51,7 +54,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                     total: number;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return {
                     products: baseQueryReturnValue.data,
@@ -75,7 +78,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                     };
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return {
                     ...baseQueryReturnValue.data,
@@ -100,6 +103,32 @@ export const productApiSlice = apiSlice.injectEndpoints({
                 };
             },
         }),
+        deleteProduct: builder.mutation({
+            query: ({ productId }: { productId: number }) => ({
+                url: `${basePath}/${productId}`,
+                method: "DELETE",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
+        updateStatusProduct: builder.mutation({
+            query: ({ status, id }: { id: number; status: string }) => ({
+                url: `${basePath}/${id}/status/${status}`,
+                method: "PATCH",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
     }),
 });
 
@@ -108,4 +137,6 @@ export const {
     useProductQuery,
     useCreateProductMutation,
     useUpdateProductMutation,
+    useDeleteProductMutation,
+    useUpdateStatusProductMutation,
 } = productApiSlice;

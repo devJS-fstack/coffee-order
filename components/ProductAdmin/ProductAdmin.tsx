@@ -1,16 +1,25 @@
 import { Dropdown, Empty, Pagination, Spin } from "antd";
 import { CoffeeOutlined } from "@ant-design/icons";
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
-import { ADD_CART_BTN } from "../../utils/variable";
+import { ADD_CART_BTN, STATUS_USERS } from "../../utils/variable";
 import { ICategory, useCategoriesQuery } from "../../apis/category";
-import { IProduct, useProductsQuery } from "../../apis/product";
+import {
+    IProduct,
+    useDeleteProductMutation,
+    useProductsQuery,
+    useUpdateStatusProductMutation,
+} from "../../apis/product";
 import { useRouter } from "next/router";
 import AddProductModal from "../AddProductModal/AddProductModal";
 import NoData from "../NoData";
-import { BsFillPencilFill } from "react-icons/bs";
+import { BsCaretRightFill, BsFillPencilFill } from "react-icons/bs";
 import { FiTrash } from "react-icons/fi";
 import { RiMoreFill } from "react-icons/ri";
 import ProductModal from "../ProductModal";
+import ConfirmModal from "../ConfirmModal/ConfirmModal";
+import { delay } from "../../utils/helper";
+import { toast } from "react-toastify";
+import { GrStatusDisabledSmall } from "react-icons/gr";
 
 const ProductAdmin = ({
     categories,
@@ -29,14 +38,19 @@ const ProductAdmin = ({
 }) => {
     const [categoryCurr, setCategoryCurr] = useState(1);
     const [pageNumber, setPageNumber] = useState(1);
+    const [isOpenConfirm, setIsOpenConfirm] = useState(false);
+    const [isOpenStatus, setIsOpenStatus] = useState(false);
+    const [isLoadingOkDelete, setIsLoadingOkDelete] = useState(false);
+    const [mDeleteProduct] = useDeleteProductMutation();
+    const [mUpdateStatusProduct] = useUpdateStatusProductMutation();
 
     const {
         data: dataProducts,
         refetch: refetchProduct,
         isFetching: isFetchingProducts,
     } = useProductsQuery(
-        { categoryId: categoryCurr, pageNumber },
-        { refetchOnMountOrArgChange: true }
+        { categoryId: categoryCurr, pageNumber, enable: false },
+        { refetchOnMountOrArgChange: true },
     );
     const products = dataProducts?.products;
     const total = dataProducts?.total;
@@ -54,6 +68,47 @@ const ProductAdmin = ({
         setPageNumber(pageNumber);
     };
 
+    const handleOnDelete = async () => {
+        setIsLoadingOkDelete(true);
+        await delay(500);
+        try {
+            await mDeleteProduct({ productId: productCurr.id }).unwrap();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+        toast.success("Delete product successfully.");
+        setIsLoadingOkDelete(false);
+        setIsOpenConfirm(false);
+        await refetchProduct();
+    };
+
+    const handleOnCancelDelete = () => {
+        setIsOpenConfirm(false);
+    };
+
+    const handleOnUpdateStatus = async () => {
+        setIsLoadingOkDelete(true);
+        const status = productCurr.enable
+            ? STATUS_USERS.DISABLED
+            : STATUS_USERS.ACTIVE;
+        await delay(500);
+        try {
+            await mUpdateStatusProduct({ id: productCurr.id, status }).unwrap();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+        toast.success(
+            `${productCurr.enable ? "Disable" : "Enable"} product successfully`,
+        );
+        setIsLoadingOkDelete(false);
+        setIsOpenStatus(false);
+        await refetchProduct();
+    };
+
+    const handleOnCancelUpdateStatus = () => {
+        setIsOpenStatus(false);
+    };
+
     return (
         <div className="container-lg container-fluid">
             <ProductModal
@@ -63,6 +118,45 @@ const ProductAdmin = ({
                 product={productCurr}
                 categories={categories}
                 isEdit={isEdit}
+            />
+            <ConfirmModal
+                isOpen={isOpenConfirm}
+                okButtonProps={{ loading: isLoadingOkDelete }}
+                handleCancel={handleOnCancelDelete}
+                handleOk={handleOnDelete}
+                title="Confirm Delete"
+                okText="Delete"
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>
+                            Are you sure you want to delete{" "}
+                            <span className="font-bold">
+                                {productCurr.nameProduct}
+                            </span>{" "}
+                            ?
+                        </span>
+                    </div>
+                }
+            />
+            <ConfirmModal
+                isOpen={isOpenStatus}
+                okButtonProps={{ loading: isLoadingOkDelete }}
+                handleCancel={handleOnCancelUpdateStatus}
+                handleOk={handleOnUpdateStatus}
+                title={`Confirm ${productCurr.enable ? "Disable" : "Enable"}`}
+                okText={productCurr.enable ? "Disable" : "Enable"}
+                children={
+                    <div className="flex flex-col justify-center pl-2 pt-2">
+                        <span>
+                            Are you sure you want to{" "}
+                            {productCurr.enable ? "disable" : "enable"} product{" "}
+                            <span className="font-bold">
+                                {productCurr.nameProduct}
+                            </span>{" "}
+                            ?
+                        </span>
+                    </div>
+                }
             />
             <div className="tch-box__body">
                 <ul className="tch-category-card-list tch-category-card-list--spacing flex justify-content-md-center flex-xl-wrap flex-lg-wrap border-0">
@@ -122,7 +216,13 @@ const ProductAdmin = ({
                                                 key={product.id}
                                             >
                                                 <div>
-                                                    <div className="tch-product__card flex flex-lg-column ml-0">
+                                                    <div
+                                                        className={`tch-product__card flex flex-lg-column ml-0 ${
+                                                            product.enable
+                                                                ? ""
+                                                                : "disabled"
+                                                        }`}
+                                                    >
                                                         <div className="tch-product__image tch-product--lg__image tch-product-img-border">
                                                             <img
                                                                 className="cursor-pointer"
@@ -130,7 +230,7 @@ const ProductAdmin = ({
                                                                     product.favIcon
                                                                 }
                                                                 onClick={(
-                                                                    e
+                                                                    e,
                                                                 ) => {}}
                                                             />
                                                         </div>
@@ -138,7 +238,7 @@ const ProductAdmin = ({
                                                             <div
                                                                 className="tch-product__content__top mb-1 mb-lg-3 cursor-pointer"
                                                                 onClick={(
-                                                                    e
+                                                                    e,
                                                                 ) => {}}
                                                             >
                                                                 <h4 className="tch-product-content__title mb-0">
@@ -165,13 +265,13 @@ const ProductAdmin = ({
                                                                                     <span
                                                                                         onClick={() => {
                                                                                             setProductCurr(
-                                                                                                product
+                                                                                                product,
                                                                                             );
                                                                                             setIsEdit(
-                                                                                                true
+                                                                                                true,
                                                                                             );
                                                                                             setIsOpen(
-                                                                                                true
+                                                                                                true,
                                                                                             );
                                                                                         }}
                                                                                         className="flex justify-space-between items-center gap-2"
@@ -184,16 +284,57 @@ const ProductAdmin = ({
                                                                                 ),
                                                                             },
                                                                             {
+                                                                                key: "2",
+                                                                                label: (
+                                                                                    <span
+                                                                                        className="flex justify-space-between items-center gap-2"
+                                                                                        onClick={() => {
+                                                                                            setProductCurr(
+                                                                                                product,
+                                                                                            );
+                                                                                            setIsOpenStatus(
+                                                                                                true,
+                                                                                            );
+                                                                                        }}
+                                                                                    >
+                                                                                        {product.enable ? (
+                                                                                            <>
+                                                                                                <GrStatusDisabledSmall
+                                                                                                    style={{
+                                                                                                        color: "#F87171",
+                                                                                                    }}
+                                                                                                />
+                                                                                                <span>
+                                                                                                    Disable
+                                                                                                </span>
+                                                                                            </>
+                                                                                        ) : (
+                                                                                            <>
+                                                                                                <BsCaretRightFill
+                                                                                                    style={{
+                                                                                                        color: "green",
+                                                                                                        fontSize: 17,
+                                                                                                    }}
+                                                                                                />
+                                                                                                <span>
+                                                                                                    Enable
+                                                                                                </span>
+                                                                                            </>
+                                                                                        )}
+                                                                                    </span>
+                                                                                ),
+                                                                            },
+                                                                            {
                                                                                 key: "3",
                                                                                 label: (
                                                                                     <span
                                                                                         onClick={() => {
-                                                                                            // commonHandler(
-                                                                                            //     value
-                                                                                            // );
-                                                                                            // setIsOpenConfirmDelete(
-                                                                                            //     true
-                                                                                            // );
+                                                                                            setProductCurr(
+                                                                                                product,
+                                                                                            );
+                                                                                            setIsOpenConfirm(
+                                                                                                true,
+                                                                                            );
                                                                                         }}
                                                                                         className="flex justify-space-between items-center gap-2"
                                                                                     >
@@ -225,7 +366,7 @@ const ProductAdmin = ({
                                                     </div>
                                                 </div>
                                             </div>
-                                        )
+                                        ),
                                     )
                                 ) : (
                                     <NoData title="No product are available" />

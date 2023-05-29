@@ -6,12 +6,14 @@ import { useState, useEffect } from "react";
 import { selectCurrentUser } from "../../auth/authSlice";
 import { useSelector } from "react-redux";
 import { isEmpty, toNumber } from "lodash";
+import { useAddOrderMutation } from "../../apis/order";
 
 export default function ProductPage() {
     const currentUser = useSelector(selectCurrentUser);
     const router = useRouter();
     const { productId = 1 } = router.query;
     const { data: dataProduct, isLoading } = useProductQuery(productId);
+    const [addOrder] = useAddOrderMutation();
     const product = dataProduct?.product;
     const toppings = dataProduct?.toppings;
     const sizes = dataProduct?.sizes;
@@ -21,7 +23,8 @@ export default function ProductPage() {
         quantity: 1,
     });
     const [sizeId, setSizeId] = useState(0);
-    const [totalQuantity, setTotalQuantity] = useState(product?.price || 0);
+    const [totalPrice, setTotalPrice] = useState(0);
+
     const handleMinusQuantity = (e: any) => {
         const isEnabled =
             e.target.parentElement.className.includes("active") ||
@@ -35,9 +38,20 @@ export default function ProductPage() {
             if (newObjectQuantity.quantity === 1) {
                 newObjectQuantity.enabledMinus = false;
             }
+            const totalPriceTopping = toppings?.reduce((acc, topping) => {
+                return (acc +=
+                    objToppingQuantity[`${topping.id}quantity`] *
+                    topping.price);
+            }, 0);
+            const sizePick = sizes?.find((size) => size.id === sizeId);
+            const newTotal =
+                totalPrice -
+                (product?.price || 0) -
+                (sizePick?.price || 0) -
+                (totalPriceTopping || 0);
 
             setObjectQuantity(newObjectQuantity);
-            setTotalQuantity((pre) => (pre -= product?.price || 0));
+            setTotalPrice(newTotal);
         }
     };
 
@@ -55,8 +69,19 @@ export default function ProductPage() {
                 newObjectQuantity.enabledPlus = false;
             }
 
+            const totalPriceTopping = toppings?.reduce((acc, topping) => {
+                return (acc +=
+                    objToppingQuantity[`${topping.id}quantity`] *
+                    topping.price);
+            }, 0);
+            const sizePick = sizes?.find((size) => size.id === sizeId);
+            const newTotal =
+                totalPrice +
+                (product?.price || 0) +
+                (sizePick?.price || 0) +
+                (totalPriceTopping || 0);
             setObjectQuantity(newObjectQuantity);
-            setTotalQuantity((pre) => (pre += product?.price || 0));
+            setTotalPrice(newTotal);
         }
     };
 
@@ -73,8 +98,8 @@ export default function ProductPage() {
         }, {});
 
         setObjToppingQuantity(toppingsMapped);
-        setTotalQuantity(product?.price || 0);
         setSizeId(sizes?.find((size) => size.price === 0)?.id || 0);
+        setTotalPrice(product?.price || 0);
     }, [toppings, product, sizes]);
 
     const handleMinusToppingQuantity = (e: any, id: number) => {
@@ -93,12 +118,11 @@ export default function ProductPage() {
             }
 
             setObjToppingQuantity(newObjectQuantity);
-            setTotalQuantity(
-                (pre) =>
-                    (pre -=
-                        toppings?.find((topping) => topping.id === id)?.price ||
-                        0)
-            );
+            const priceTopping =
+                toppings?.find((topping) => topping.id === id)?.price || 0;
+            const newTotal =
+                totalPrice - priceTopping * objectQuantity.quantity;
+            setTotalPrice(newTotal);
         }
     };
 
@@ -118,33 +142,53 @@ export default function ProductPage() {
             }
 
             setObjToppingQuantity(newObjectQuantity);
-            setTotalQuantity(
-                (pre) =>
-                    (pre +=
-                        toppings?.find((topping) => topping.id === id)?.price ||
-                        0)
-            );
+            const priceTopping =
+                toppings?.find((topping) => topping.id === id)?.price || 0;
+            const newTotal =
+                totalPrice + priceTopping * objectQuantity.quantity;
+            setTotalPrice(newTotal);
         }
     };
 
-    const handleOnSubmitCart = () => {
+    const handleOnChangeSize = (value: number) => {
+        const preSize = sizes?.find((size) => size.id === sizeId);
+        const currentSize = sizes?.find((size) => size.id === value);
+        const newTotal =
+            totalPrice -
+            (preSize?.price || 0) * objectQuantity.quantity +
+            (currentSize?.price || 0) * objectQuantity.quantity;
+        setTotalPrice(newTotal);
+        setSizeId(value);
+    };
+
+    const handleOnSubmitCart = async () => {
+        const toppingIds = Object.keys(objToppingQuantity).filter(
+            (key) => key.includes("quantity") && objToppingQuantity[key],
+        );
+        const toppings = toppingIds.map((key) => ({
+            toppingId: toNumber(key.replace("quantity", "")),
+            quantity: toNumber(objToppingQuantity[key]),
+        }));
+        const orderInfo = {
+            productId: productId as number,
+            quantity: objectQuantity.quantity,
+            sizeId: sizeId,
+            toppings,
+        };
         if (isEmpty(currentUser)) {
-            const toppingIds = Object.keys(objToppingQuantity)
-                .filter(
-                    (key) => key.includes("quantity") && objToppingQuantity[key]
-                )
-                .reduce((acc, key) => {
-                    return { ...acc, [key]: objToppingQuantity[key] };
-                }, {});
-            router.push({
-                pathname: "/sign-in",
-                query: {
-                    productId,
-                    productQuantity: objectQuantity.quantity,
-                    ...toppingIds,
-                    sizeId,
-                },
+            sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+            router.push("/sign-in");
+        } else {
+            await addOrder({
+                addressReceiver: "",
+                instructionAddressReceiver: "",
+                nameReceiver: `${currentUser.firstName} ${currentUser.lastName}`,
+                paymentMethod: "CASH",
+                phoneReceiver: currentUser.phoneNumber || "",
+                shippingFee: 0,
+                orderDetail: orderInfo,
             });
+            router.push("/order");
         }
     };
 
@@ -247,8 +291,10 @@ export default function ProductPage() {
                                     {!isLoading ? (
                                         <Radio.Group
                                             value={sizeId}
-                                            onChange={(e) => {
-                                                setSizeId(e.target.value);
+                                            onChange={(value) => {
+                                                handleOnChangeSize(
+                                                    value.target.value,
+                                                );
                                             }}
                                         >
                                             {sizes?.map((size) => (
@@ -304,7 +350,7 @@ export default function ProductPage() {
                                                             onClick={(e) => {
                                                                 handleMinusToppingQuantity(
                                                                     e,
-                                                                    topping.id
+                                                                    topping.id,
                                                                 );
                                                             }}
                                                             className={`quantity-extra flex justify-center items-center cursor-pointer ${
@@ -328,7 +374,7 @@ export default function ProductPage() {
                                                             onClick={(e) => {
                                                                 handlePlusToppingQuantity(
                                                                     e,
-                                                                    topping.id
+                                                                    topping.id,
                                                                 );
                                                             }}
                                                             className={`quantity-extra flex justify-center items-center cursor-pointer ${
@@ -353,7 +399,7 @@ export default function ProductPage() {
                             className="btn-add-item block w-full mt-6"
                             onClick={handleOnSubmitCart}
                         >
-                            {totalQuantity} $ - Add To Cart
+                            {totalPrice} $ - Add To Cart
                         </button>
                     </div>
                 </div>

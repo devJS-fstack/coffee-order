@@ -20,7 +20,7 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
             transformResponse(
                 baseQueryReturnValue: { message: string; data?: ICategory[] },
                 meta,
-                arg
+                arg,
             ) {
                 return baseQueryReturnValue?.data;
             },
@@ -52,6 +52,19 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                 };
             },
         }),
+        deleteCategory: builder.mutation({
+            query: ({ categoryId }: { categoryId: number }) => ({
+                url: `${basePath}/${categoryId}`,
+                method: "DELETE",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return {
+                    statusCode: data.statusCode || 400,
+                    message: data.message || "Sorry! Something went wrong",
+                };
+            },
+        }),
     }),
 });
 
@@ -60,4 +73,6 @@ export const {
     useCreateCategoryMutation,
     useUpdateCategoryMutation,
     useUpdateStatusCategoryMutation,
+    useLazyCategoriesQuery,
+    useDeleteCategoryMutation,
 } = categoryApiSlice;

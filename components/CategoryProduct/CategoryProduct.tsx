@@ -18,7 +18,14 @@ const CategoryProduct = () => {
     const { data: categories, isLoading: isLoadingCategory } =
         useCategoriesQuery({ enable: true });
     const { data: dataProducts, isLoading: isLoadingProduct } =
-        useProductsQuery({ categoryId: categoryCurr, pageNumber });
+        useProductsQuery(
+            {
+                categoryId: categoryCurr,
+                pageNumber,
+                enable: true,
+            },
+            { refetchOnMountOrArgChange: true },
+        );
     const products = dataProducts?.products;
     const total = dataProducts?.total;
 
@@ -133,7 +140,7 @@ const CategoryProduct = () => {
                                                             }
                                                             onClick={(e) =>
                                                                 handleOnClickProduct(
-                                                                    product.id
+                                                                    product.id,
                                                                 )
                                                             }
                                                         />
@@ -143,7 +150,7 @@ const CategoryProduct = () => {
                                                             className="tch-product__content__top mb-1 mb-lg-3 cursor-pointer"
                                                             onClick={(e) =>
                                                                 handleOnClickProduct(
-                                                                    product.id
+                                                                    product.id,
                                                                 )
                                                             }
                                                         >
@@ -166,7 +173,7 @@ const CategoryProduct = () => {
                                                                 className="btn btn--orange-1 add-to-cart p-0"
                                                                 onClick={() => {
                                                                     handleAddCart(
-                                                                        product.id
+                                                                        product.id,
                                                                     );
                                                                 }}
                                                             >

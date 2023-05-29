@@ -83,7 +83,7 @@ const ProductModal = ({
         const formData = new FormData();
         const params: any = { ...form.getFieldsValue() };
         Object.keys(params).forEach((key: any) =>
-            formData.append(key, params[key])
+            formData.append(key, params[key]),
         );
 
         formData.append("favIcon", fileList[0]?.originFileObj as Blob);
@@ -103,7 +103,7 @@ const ProductModal = ({
             }
         } catch (error: any) {
             toast.error(
-                error?.data?.message || "Sorry. Some thing went wrong!"
+                error?.data?.message || "Sorry. Some thing went wrong!",
             );
             setIsLoadingBtn(false);
             return;
@@ -126,7 +126,7 @@ const ProductModal = ({
                             price: size.price,
                             id: index,
                             size: size.size,
-                        })
+                        }),
                     ),
                 };
                 form.setFieldsValue(newProduct);
@@ -145,6 +145,7 @@ const ProductModal = ({
 
     return (
         <Modal
+            width={540}
             title={isEdit ? "Edit Product" : "Add Product"}
             open={isOpen}
             onOk={handleOk}
@@ -157,7 +158,11 @@ const ProductModal = ({
                 loading: isLoadingBtn,
             }}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
-            style={{ top: 0 }}
+            bodyStyle={{
+                height: 540,
+                overflowY: "auto",
+                padding: "0 12px",
+            }}
         >
             <Form
                 {...{
@@ -227,7 +232,12 @@ const ProductModal = ({
                             },
                         ]}
                     >
-                        <Select optionLabelProp="label" listHeight={200}>
+                        <Select
+                            optionLabelProp="label"
+                            listHeight={200}
+                            showSearch
+                            optionFilterProp="label"
+                        >
                             {categories?.map((category) => (
                                 <Select.Option
                                     value={category.id}

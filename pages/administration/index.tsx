@@ -38,7 +38,7 @@ const Admin = () => {
     }, [page]);
 
     return (
-        <div className="flex">
+        <div className="flex overflow-hidden h-screen">
             <ToastContainer
                 position="top-center"
                 autoClose={2000}

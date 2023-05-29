@@ -158,7 +158,12 @@ const UserModal = ({
                 loading: isLoadingBtn,
             }}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
-            style={{ top: 0 }}
+            bodyStyle={{
+                height: 540,
+                overflowY: "auto",
+                padding: "0 12px",
+            }}
+            destroyOnClose
         >
             <Form
                 {...{
@@ -293,8 +298,8 @@ const UserModal = ({
                                 }
                                 return Promise.reject(
                                     new Error(
-                                        "The two passwords that you entered do not match!"
-                                    )
+                                        "The two passwords that you entered do not match!",
+                                    ),
                                 );
                             },
                         }),

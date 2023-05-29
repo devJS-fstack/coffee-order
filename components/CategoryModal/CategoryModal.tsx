@@ -70,7 +70,7 @@ const CategoryModal = ({
     };
 
     const handleOnChangeInput = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
         const { name, value } = e.target;
         handleCategoryInfoChange(name, value);
@@ -92,7 +92,7 @@ const CategoryModal = ({
         const formData = new FormData();
         const params: any = { ...categoryInfo };
         Object.keys(params).forEach((key: any) =>
-            formData.append(key, params[key])
+            formData.append(key, params[key]),
         );
 
         formData.append("favIcon", fileList[0]?.originFileObj as Blob);
@@ -109,7 +109,7 @@ const CategoryModal = ({
             }
         } catch (error: any) {
             toast.error(
-                error?.data?.message || "Sorry. Some thing went wrong!"
+                error?.data?.message || "Sorry. Some thing went wrong!",
             );
             setIsLoadingBtn(false);
             return;
@@ -162,7 +162,11 @@ const CategoryModal = ({
                 loading: isLoadingBtn,
             }}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
-            style={{ top: 0 }}
+            bodyStyle={{
+                height: 380,
+                overflowY: "auto",
+                padding: "0 12px",
+            }}
         >
             <Form
                 {...{

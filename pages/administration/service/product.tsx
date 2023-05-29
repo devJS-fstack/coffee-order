@@ -19,7 +19,7 @@ const ProductAdmin = ({}: {}) => {
     }, []);
 
     return (
-        <div className="w-full py-4">
+        <div className="w-full py-4 overflow-auto">
             <span className="flex justify-end pr-4 pb-4">
                 <Button
                     className="hover-btn-custom"

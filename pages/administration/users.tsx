@@ -57,7 +57,7 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
             await mUpdateStatus({ status, userId: userInfo?.id || 0 }).unwrap();
             await refetchUsers();
             toast.success(
-                `${isActiveCurrUser ? "Disable" : "Enable"} user successfully`
+                `${isActiveCurrUser ? "Disable" : "Enable"} user successfully`,
             );
         } catch (error: any) {
             toast.error(error.message);
@@ -89,7 +89,7 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
     }, [userInfo]);
 
     return (
-        <div className="w-full py-4">
+        <div className="w-full py-4 overflow-auto">
             <UserModal
                 setUserInfo={setUserInfo}
                 user={userInfo}
@@ -239,7 +239,7 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                         className="flex justify-space-between items-center gap-2"
                                                         onClick={() => {
                                                             handleOnClickModify(
-                                                                value
+                                                                value,
                                                             );
                                                         }}
                                                     >
@@ -255,10 +255,10 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                         className="flex justify-space-between items-center gap-2"
                                                         onClick={() => {
                                                             commonHandler(
-                                                                value
+                                                                value,
                                                             );
                                                             setIsOpenConfirmActive(
-                                                                true
+                                                                true,
                                                             );
                                                         }}
                                                     >
@@ -290,10 +290,10 @@ const UserPage = ({ collapsed }: { collapsed: boolean }) => {
                                                     <span
                                                         onClick={() => {
                                                             commonHandler(
-                                                                value
+                                                                value,
                                                             );
                                                             setIsOpenConfirmDelete(
-                                                                true
+                                                                true,
                                                             );
                                                         }}
                                                         className="flex justify-space-between items-center gap-2"

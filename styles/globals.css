@@ -99,3 +99,8 @@ svg {
 .coffee-dragger button {
     background-color: transparent;
 }
+
+.ant-modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 14px;
+}
