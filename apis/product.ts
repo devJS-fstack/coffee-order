@@ -35,7 +35,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                 pageNumber = 1,
                 enable,
             }: {
-                categoryId: number;
+                categoryId?: number;
                 limit?: number;
                 pageNumber?: number;
                 enable?: boolean;
@@ -54,7 +54,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                     total: number;
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return {
                     products: baseQueryReturnValue.data,
@@ -78,7 +78,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                     };
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return {
                     ...baseQueryReturnValue.data,
