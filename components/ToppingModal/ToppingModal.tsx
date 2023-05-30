@@ -19,16 +19,12 @@ import {
 } from "react";
 import { isEmpty, isEqual } from "lodash";
 import { toast } from "react-toastify";
-import { IProduct, ITopping, useProductsQuery } from "../../apis/product";
-
-const options: SelectProps["options"] = [];
-
-for (let i = 10; i < 36; i++) {
-    options.push({
-        label: i.toString(36) + i,
-        value: i.toString(36) + i,
-    });
-}
+import { useProductsQuery } from "../../apis/product";
+import {
+    ITopping,
+    useCreateToppingMutation,
+    useUpdateToppingMutation,
+} from "../../apis/topping";
 
 const ToppingModal = ({
     isOpen,
@@ -45,6 +41,11 @@ const ToppingModal = ({
 }) => {
     const [form] = Form.useForm();
     const [toppingInfo, setToppingInfo] = useState(topping as ITopping);
+    const [mCreateTopping] = useCreateToppingMutation();
+    const [mUpdateTopping] = useUpdateToppingMutation();
+    const [selectedItems, setSelectedItems] = useState<number[]>(
+        topping?.productIds || [],
+    );
     const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const {
         data: dataProducts,
@@ -52,19 +53,21 @@ const ToppingModal = ({
         isFetching: isFetchingProducts,
     } = useProductsQuery({ enable: true }, { refetchOnMountOrArgChange: true });
     const isDisabledSave = useMemo(() => {
-        return isEqual(topping, toppingInfo);
-    }, [topping, toppingInfo]);
+        return (
+            isEqual(topping, toppingInfo) &&
+            isEqual(selectedItems, topping?.productIds)
+        );
+    }, [topping, toppingInfo, selectedItems]);
 
     const handleOk = () => {
         form.submit();
-        // setIsOpen(false);
     };
 
     const handleCancel = () => {
         setIsOpen(false);
     };
 
-    const handleToppingInfoChange = (key: string, value: string) => {
+    const handleToppingInfoChange = (key: string, value: any) => {
         setToppingInfo((pre: any) => {
             return {
                 ...pre,
@@ -74,22 +77,51 @@ const ToppingModal = ({
     };
 
     const handleOnChangeInput = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
         const { name, value } = e.target;
         handleToppingInfoChange(name, value);
     };
-    const handleOnFinish = async () => {};
+    const handleOnFinish = async () => {
+        setIsLoadingBtn(true);
+        const payload = form.getFieldsValue();
+        console.log(payload);
+        let message = "Create topping successfully";
+        try {
+            if (isEdit) {
+                message = "Update topping successfully";
+                await mUpdateTopping({
+                    ...payload,
+                    toppingId: topping?.id,
+                }).unwrap();
+            } else {
+                await mCreateTopping(payload).unwrap();
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Sorry something went wrong !");
+            setIsLoadingBtn(false);
+            return;
+        }
+        setIsLoadingBtn(false);
+        setIsOpen(false);
+        toast.success(message);
+        refetchData();
+    };
 
     useEffect(() => {
         if (isOpen) {
-            refetchProducts();
             form.resetFields();
             if (isEdit && !isEmpty(topping)) {
                 form.setFieldsValue({
                     nameTopping: topping.nameTopping,
                     price: topping.price,
+                    productIds: topping.productIds.filter((productId) =>
+                        dataProducts?.products.find(
+                            (product) => product.id === productId,
+                        ),
+                    ),
                 });
+                setSelectedItems(topping.productIds);
                 setToppingInfo(topping);
             } else {
                 form.setFieldsValue({
@@ -100,19 +132,18 @@ const ToppingModal = ({
         }
     }, [topping, isOpen]);
 
-    // const [selectedItems, setSelectedItems] = useState<string[]>([]);
-    // const handleOnSelectItems = (value: any) => {
-    //     if (value.some((v: any) => v === 0)) {
-    //         const newData =
-    //             dataProducts?.products.map((product) => product.nameProduct) ||
-    //             [];
-    //         console.log(newData);
-    //         setSelectedItems(newData);
-    //         return;
-    //     }
+    const handleOnSelectItems = (value: any) => {
+        if (value.some((v: any) => v === 0)) {
+            const newData =
+                dataProducts?.products.map((product) => product.id) || [];
+            form.setFieldValue("productIds", newData);
+            setSelectedItems(newData);
+            return;
+        }
 
-    //     setSelectedItems(value);
-    // };
+        setSelectedItems(value);
+        form.setFieldValue("productIds", value);
+    };
 
     return (
         <Modal
@@ -189,15 +220,19 @@ const ToppingModal = ({
                             addonAfter="$"
                             stringMode={false}
                             name="price"
+                            onChange={(value) => {
+                                handleToppingInfoChange("price", value);
+                            }}
                         />
                     </Form.Item>
                     <Form.Item
                         style={{ width: "100%" }}
-                        name="productId"
+                        name="productIds"
                         label="Products"
                         className="mt-4"
                     >
                         <Select
+                            placeholder="Choose products"
                             listHeight={200}
                             showSearch
                             optionFilterProp="label"
@@ -207,10 +242,10 @@ const ToppingModal = ({
                             placement="topRight"
                             allowClear
                             maxTagCount="responsive"
-                            // value={selectedItems}
-                            // onChange={(value) => {
-                            //     handleOnSelectItems(value);
-                            // }}
+                            value={selectedItems}
+                            onChange={(value) => {
+                                handleOnSelectItems(value);
+                            }}
                         >
                             {!isFetchingProducts && (
                                 <>
@@ -225,7 +260,7 @@ const ToppingModal = ({
                                     </Select.Option>
                                     {dataProducts?.products?.map((product) => (
                                         <Select.Option
-                                            value={product.nameProduct}
+                                            value={product.id}
                                             label={product.nameProduct}
                                             key={product.id}
                                         >

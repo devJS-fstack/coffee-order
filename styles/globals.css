@@ -104,3 +104,7 @@ svg {
     border-top: 1px solid #e5e7eb;
     padding-top: 14px;
 }
+
+:where(.css-dev-only-do-not-override-1e3x2xa).ant-select-multiple .ant-select-selection-item {
+    background: rgb(255 111 0 / 60%) !important;
+}
