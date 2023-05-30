@@ -50,8 +50,9 @@ const ProductAdmin = ({
         isFetching: isFetchingProducts,
     } = useProductsQuery(
         { categoryId: categoryCurr, pageNumber, enable: false },
-        { refetchOnMountOrArgChange: true },
+        { refetchOnMountOrArgChange: true }
     );
+
     const products = dataProducts?.products;
     const total = dataProducts?.total;
     const [productCurr, setProductCurr] = useState({} as IProduct);
@@ -98,7 +99,7 @@ const ProductAdmin = ({
             toast.error(error.message);
         }
         toast.success(
-            `${productCurr.enable ? "Disable" : "Enable"} product successfully`,
+            `${productCurr.enable ? "Disable" : "Enable"} product successfully`
         );
         setIsLoadingOkDelete(false);
         setIsOpenStatus(false);
@@ -230,7 +231,7 @@ const ProductAdmin = ({
                                                                     product.favIcon
                                                                 }
                                                                 onClick={(
-                                                                    e,
+                                                                    e
                                                                 ) => {}}
                                                             />
                                                         </div>
@@ -238,7 +239,7 @@ const ProductAdmin = ({
                                                             <div
                                                                 className="tch-product__content__top mb-1 mb-lg-3 cursor-pointer"
                                                                 onClick={(
-                                                                    e,
+                                                                    e
                                                                 ) => {}}
                                                             >
                                                                 <h4 className="tch-product-content__title mb-0">
@@ -265,13 +266,13 @@ const ProductAdmin = ({
                                                                                     <span
                                                                                         onClick={() => {
                                                                                             setProductCurr(
-                                                                                                product,
+                                                                                                product
                                                                                             );
                                                                                             setIsEdit(
-                                                                                                true,
+                                                                                                true
                                                                                             );
                                                                                             setIsOpen(
-                                                                                                true,
+                                                                                                true
                                                                                             );
                                                                                         }}
                                                                                         className="flex justify-space-between items-center gap-2"
@@ -290,10 +291,10 @@ const ProductAdmin = ({
                                                                                         className="flex justify-space-between items-center gap-2"
                                                                                         onClick={() => {
                                                                                             setProductCurr(
-                                                                                                product,
+                                                                                                product
                                                                                             );
                                                                                             setIsOpenStatus(
-                                                                                                true,
+                                                                                                true
                                                                                             );
                                                                                         }}
                                                                                     >
@@ -330,10 +331,10 @@ const ProductAdmin = ({
                                                                                     <span
                                                                                         onClick={() => {
                                                                                             setProductCurr(
-                                                                                                product,
+                                                                                                product
                                                                                             );
                                                                                             setIsOpenConfirm(
-                                                                                                true,
+                                                                                                true
                                                                                             );
                                                                                         }}
                                                                                         className="flex justify-space-between items-center gap-2"
@@ -366,7 +367,7 @@ const ProductAdmin = ({
                                                     </div>
                                                 </div>
                                             </div>
-                                        ),
+                                        )
                                     )
                                 ) : (
                                     <NoData title="No product are available" />

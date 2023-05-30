@@ -29,6 +29,7 @@ import {
 } from "../../apis/product";
 import { ICategory } from "../../apis/category";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { useLazyToppingsQuery, useToppingsQuery } from "../../apis/topping";
 
 export interface IDeliveryInfo {
     titleAddress: string;
@@ -57,6 +58,10 @@ const ProductModal = ({
     const [mUpdateProduct] = useUpdateProductMutation();
     const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const { data: toppings, isFetching: isFetchingToppings } = useToppingsQuery(
+        {}
+    );
+    const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
     const handleOk = () => {
         form.submit();
@@ -79,17 +84,21 @@ const ProductModal = ({
             return;
         }
 
-        // setIsLoadingBtn(true);
+        setIsLoadingBtn(true);
         const formData = new FormData();
         const params: any = { ...form.getFieldsValue() };
         Object.keys(params).forEach((key: any) =>
-            formData.append(key, params[key]),
+            formData.append(key, params[key])
         );
 
         formData.append("favIcon", fileList[0]?.originFileObj as Blob);
         const sizes = form.getFieldValue("sizes");
+        const toppingIds = form.getFieldValue("toppingIds");
+        console.log(toppingIds);
         formData.delete("sizes");
+        formData.delete("toppingIds");
         formData.append("sizes", JSON.stringify(sizes));
+        formData.append("toppingIds", JSON.stringify(toppingIds));
         let message = "Create product successfully";
         try {
             if (isEdit) {
@@ -103,7 +112,7 @@ const ProductModal = ({
             }
         } catch (error: any) {
             toast.error(
-                error?.data?.message || "Sorry. Some thing went wrong!",
+                error?.data?.message || "Sorry. Some thing went wrong!"
             );
             setIsLoadingBtn(false);
             return;
@@ -112,6 +121,18 @@ const ProductModal = ({
         setIsLoadingBtn(false);
         setIsOpen(false);
         refetchData();
+    };
+
+    const handleOnSelectItems = (value: any) => {
+        if (value.some((v: any) => v === 0)) {
+            const newData = toppings?.map((topping) => topping.id) || [];
+            form.setFieldValue("toppingIds", newData);
+            setSelectedItems(newData);
+            return;
+        }
+
+        setSelectedItems(value);
+        form.setFieldValue("productIds", value);
     };
 
     useEffect(() => {
@@ -126,9 +147,13 @@ const ProductModal = ({
                             price: size.price,
                             id: index,
                             size: size.size,
-                        }),
+                        })
+                    ),
+                    toppingIds: product.toppingIds.filter((toppingId) =>
+                        toppings?.some((topping) => topping.id === toppingId)
                     ),
                 };
+
                 form.setFieldsValue(newProduct);
                 setFileList([
                     {
@@ -159,10 +184,11 @@ const ProductModal = ({
             }}
             cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
             bodyStyle={{
-                height: 540,
+                height: 440,
                 overflowY: "auto",
                 padding: "0 12px",
             }}
+            destroyOnClose
         >
             <Form
                 {...{
@@ -320,6 +346,54 @@ const ProductModal = ({
                         </>
                     )}
                 </Form.List>
+                <Form.Item
+                    style={{ width: "100%" }}
+                    name="toppingIds"
+                    label="Toppings"
+                    className="mt-4"
+                >
+                    <Select
+                        placeholder="Select topping"
+                        listHeight={200}
+                        showSearch
+                        optionFilterProp="label"
+                        optionLabelProp="label"
+                        loading={isFetchingToppings}
+                        mode="multiple"
+                        placement="topRight"
+                        allowClear
+                        maxTagCount="responsive"
+                        value={selectedItems}
+                        onChange={(value) => {
+                            handleOnSelectItems(value);
+                        }}
+                    >
+                        {!isFetchingToppings && (
+                            <>
+                                <Select.Option
+                                    value={0}
+                                    label={"All Product"}
+                                    key={0}
+                                >
+                                    <div className="flex justify-center">
+                                        <span>Select All</span>
+                                    </div>
+                                </Select.Option>
+                                {toppings?.map((topping) => (
+                                    <Select.Option
+                                        value={topping.id}
+                                        label={topping.nameTopping}
+                                        key={topping.id}
+                                    >
+                                        <div className="flex">
+                                            <span>{topping.nameTopping}</span>
+                                        </div>
+                                    </Select.Option>
+                                ))}
+                            </>
+                        )}
+                    </Select>
+                </Form.Item>
                 <Form.Item
                     label="Upload"
                     valuePropName="fileList"

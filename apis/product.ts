@@ -11,6 +11,7 @@ export type IProduct = {
     price: number;
     enable?: boolean;
     sizes?: ISizeProduct[];
+    toppingIds: number[];
 };
 
 export type ITopping = {

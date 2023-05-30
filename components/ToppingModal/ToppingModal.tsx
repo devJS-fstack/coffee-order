@@ -44,7 +44,7 @@ const ToppingModal = ({
     const [mCreateTopping] = useCreateToppingMutation();
     const [mUpdateTopping] = useUpdateToppingMutation();
     const [selectedItems, setSelectedItems] = useState<number[]>(
-        topping?.productIds || [],
+        topping?.productIds || []
     );
     const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const {
@@ -53,9 +53,13 @@ const ToppingModal = ({
         isFetching: isFetchingProducts,
     } = useProductsQuery({ enable: true }, { refetchOnMountOrArgChange: true });
     const isDisabledSave = useMemo(() => {
+        // console.log(topping?.prod
         return (
             isEqual(topping, toppingInfo) &&
-            isEqual(selectedItems, topping?.productIds)
+            topping?.productIds?.length === selectedItems.length &&
+            topping?.productIds?.every((item) =>
+                selectedItems.some((productId) => productId === item)
+            )
         );
     }, [topping, toppingInfo, selectedItems]);
 
@@ -77,7 +81,7 @@ const ToppingModal = ({
     };
 
     const handleOnChangeInput = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
         handleToppingInfoChange(name, value);
@@ -117,8 +121,8 @@ const ToppingModal = ({
                     price: topping.price,
                     productIds: topping.productIds.filter((productId) =>
                         dataProducts?.products.find(
-                            (product) => product.id === productId,
-                        ),
+                            (product) => product.id === productId
+                        )
                     ),
                 });
                 setSelectedItems(topping.productIds);

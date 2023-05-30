@@ -13,14 +13,14 @@ export type ITopping = {
 export const voucherApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         toppings: builder.query({
-            query: () => ({
-                url: `${basePath}`,
+            query: ({ enable = false }: { enable?: boolean }) => ({
+                url: `${basePath}?enable=${enable}`,
                 method: "GET",
             }),
             transformResponse(
                 baseQueryReturnValue: { message: string; data?: ITopping[] },
                 meta,
-                arg,
+                arg
             ) {
                 return baseQueryReturnValue?.data;
             },
