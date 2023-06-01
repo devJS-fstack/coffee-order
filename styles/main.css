@@ -49,8 +49,11 @@
     --smoky-gray-4: #ededee;
     --smoky-gray-5: hsla(0,0%,76.9%,0.3);
     --smoky-gray-6: #e4e4e4;
+    --gray-500: #6b7280;
+    --gray-800: #1f2937;
     --green: #52c41a;
     --blue: #0084ff;
+    --blue-50: #eff3ff;
     --product-box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
     --scale-unit: 1rem;
     --space-2: calc(var(--scale-unit)*0.125);

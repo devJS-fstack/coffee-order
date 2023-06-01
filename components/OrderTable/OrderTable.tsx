@@ -3,23 +3,32 @@ import { Button, Dropdown, Tag } from "antd";
 import { GrStatusDisabledSmall } from "react-icons/gr";
 import { FiTrash } from "react-icons/fi";
 import { RiMoreFill } from "react-icons/ri";
-import { useEffect, useState } from "react";
-import { useOrdersByAdminQuery } from "../../apis/order";
+import { useEffect, useState, Dispatch, SetStateAction } from "react";
+import { IResponseOrders, useOrdersByAdminQuery } from "../../apis/order";
 import TableV1 from "../TableV1";
 
-const OrderTable = ({}: {}) => {
-    const { data: orders, isFetching: isFetchingOrder } = useOrdersByAdminQuery(
-        {},
-    );
+const OrderTable = ({
+    orders,
+    isFetchingOrder,
+    setOrderCurrent,
+}: {
+    orders?: IResponseOrders[];
+    isFetchingOrder: boolean;
+    setOrderCurrent: Dispatch<SetStateAction<IResponseOrders>>;
+}) => {
     const [orderIdSelect, setOrderIdSelect] = useState(0);
-    console.log(orders);
+
+    useEffect(() => {
+        setOrderIdSelect(orders?.[0].id || 0);
+    }, []);
     return (
-        <div className="w-full py-4">
+        <div className="w-full pt-8 px-8">
             <TableV1
                 onRow={(record, index) => {
                     return {
                         onClick: (e) => {
                             setOrderIdSelect(record.id);
+                            setOrderCurrent(record);
                         },
                     };
                 }}

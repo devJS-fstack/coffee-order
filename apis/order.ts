@@ -77,6 +77,14 @@ export interface IResponseToppingOrder {
         enabled: boolean;
     };
 }
+
+export interface ISize {
+    id: string;
+    price: number;
+    productId: number;
+    size: string;
+}
+
 export interface IResponseProductOrder {
     id: number;
     quantity: number;
@@ -86,6 +94,7 @@ export interface IResponseProductOrder {
     sizeId: number;
     nameProduct: string;
     size: string;
+    sizeDetail: ISize;
     toppings: IResponseToppingOrder[];
 }
 
@@ -112,7 +121,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -128,7 +137,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -144,7 +153,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
