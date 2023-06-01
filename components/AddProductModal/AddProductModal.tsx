@@ -148,7 +148,11 @@ const AddProductModal = ({
 
             setObjToppingQuantity(toppingsMapped);
             setTotalPrice(product?.price || 0);
-            setSizeId(sizes?.find((size) => size.price === 0)?.id || 0);
+            const newSizeId =
+                sizes?.find((size) => size.price === 0)?.id ||
+                sizes?.[0].id ||
+                0;
+            setSizeId(newSizeId);
             setObjectQuantity({
                 quantity: 1,
                 enabledMinus: false,
@@ -229,7 +233,12 @@ const AddProductModal = ({
                 enabledPlus: (productOrder?.quantity || 0) < 10,
                 quantity: productOrder?.quantity || 1,
             });
-            setSizeId(productOrder?.sizeId || 0);
+            const newSizeId =
+                productOrder?.sizeId ||
+                sizes?.find((size) => size.price === 0)?.id ||
+                sizes?.[0].id ||
+                0;
+            setSizeId(newSizeId);
             setTotalPrice(
                 (productOrder?.totalPrice || 0) +
                     sumBy(productOrder?.toppings, "totalPrice")

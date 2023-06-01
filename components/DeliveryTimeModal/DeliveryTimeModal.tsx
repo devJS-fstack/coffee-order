@@ -1,34 +1,44 @@
 import { Modal, TimePicker, DatePicker, Form } from "antd";
 import { useState, Dispatch, SetStateAction } from "react";
-import { getNextHour, getPastHours, unavailableHours } from "../../utils/helper";
+import {
+    getNextHour,
+    getPastHours,
+    unavailableHours,
+} from "../../utils/helper";
 import moment from "moment";
 import { IDeliveryInfo } from "../AddressModal/AddressModal";
 import dayjs from "dayjs";
 
-const DeliveryTimeModal = ({ 
+const DeliveryTimeModal = ({
     isOpen,
     setIsOpen,
     setDeliveryInfo,
- }: { 
-    isOpen: boolean,
-    setIsOpen: Dispatch<SetStateAction<boolean>>,
-    setDeliveryInfo: Dispatch<SetStateAction<IDeliveryInfo>>,
+}: {
+    isOpen: boolean;
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
+    setDeliveryInfo: Dispatch<SetStateAction<IDeliveryInfo>>;
 }) => {
     const [form] = Form.useForm();
     const [disabledHours, setDisableHours] = useState(getPastHours());
-    
+
     const handleOk = () => {
         form.validateFields().then(() => {
             form.submit();
             setIsOpen(false);
         });
-      };
-    
+    };
+
     const handleCancel = () => {
         setIsOpen(false);
     };
 
-    const handleOnFinish = ({ date, time }: { date: dayjs.Dayjs, time: dayjs.Dayjs }) => {
+    const handleOnFinish = ({
+        date,
+        time,
+    }: {
+        date: dayjs.Dayjs;
+        time: dayjs.Dayjs;
+    }) => {
         const dateStr = date.format("YYYY-MM-DD");
         const timeStr = time.format("HH:mm");
 
@@ -36,71 +46,95 @@ const DeliveryTimeModal = ({
             ...pre,
             date: dateStr,
             time: timeStr,
-        }))
-    }
+        }));
+    };
 
     const disabledDate = (current: any) => {
-        const today = moment().startOf('day');
-        const tomorrow = moment().add(1, 'days').startOf('day');
-        const nextTomorrow = moment().add(2, 'days').startOf('day');
-        return !(current.isSame(today, 'day') || current.isSame(tomorrow, 'day') || current.isSame(nextTomorrow, 'day'));
-    }
+        const today = moment().startOf("day");
+        const tomorrow = moment().add(1, "days").startOf("day");
+        const nextTomorrow = moment().add(2, "days").startOf("day");
+        return !(
+            current.isSame(today, "day") ||
+            current.isSame(tomorrow, "day") ||
+            current.isSame(nextTomorrow, "day")
+        );
+    };
 
     const handleOnSelectDate = (date: dayjs.Dayjs) => {
-        const currentDate = dayjs().date();
-        const selectDate = date.date();
+        const currentDate = dayjs();
+        const selectDate = date;
 
         if (selectDate > currentDate) {
-            console.log("set empty");
             setDisableHours(unavailableHours);
             form.setFieldValue("time", dayjs().hour(8).minute(0));
         } else {
-            console.log("set past");
             form.setFieldValue("time", getNextHour());
             setDisableHours(getPastHours());
         }
-    }
-
-    const handleOnSelectTime = (time: dayjs.Dayjs) => {
-
-    }
+    };
 
     return (
-        <Modal title="Delivery Time" open={isOpen} onOk={handleOk} onCancel={handleCancel} okButtonProps={{ typeof: "submit", style: { backgroundColor: "var(--orange-4)" } }} cancelButtonProps={{ style: { backgroundColor: "transparent" } }}>
-            <Form form={form} onFinish={(values) => { handleOnFinish(values) }} initialValues={{
-                date: dayjs(),
-                time: getNextHour(),
-            }}>
-                <Form.Item label={"Received Date"} name={"date"} rules={[
-                    {
-                        required: true,
-                        message: "Please select one date"
-                    }
-                ]}>
-                    <DatePicker 
+        <Modal
+            title="Delivery Time"
+            open={isOpen}
+            onOk={handleOk}
+            onCancel={handleCancel}
+            okButtonProps={{
+                typeof: "submit",
+                style: { backgroundColor: "var(--orange-4)" },
+            }}
+            cancelButtonProps={{ style: { backgroundColor: "transparent" } }}
+        >
+            <Form
+                form={form}
+                onFinish={(values) => {
+                    handleOnFinish(values);
+                }}
+                initialValues={{
+                    date: dayjs(),
+                    time: getNextHour(),
+                }}
+            >
+                <Form.Item
+                    label={"Received Date"}
+                    name={"date"}
+                    rules={[
+                        {
+                            required: true,
+                            message: "Please select one date",
+                        },
+                    ]}
+                >
+                    <DatePicker
                         onSelect={(date) => handleOnSelectDate(date)}
                         className="w-full"
                         disabledDate={disabledDate}
                     />
                 </Form.Item>
-                <Form.Item label={"Received Time"} name={"time"} rules={[
-                    {
-                        required: true,
-                        message: "Please select one time"
-                    }
-                ]}>
+                <Form.Item
+                    label={"Received Time"}
+                    name={"time"}
+                    rules={[
+                        {
+                            required: true,
+                            message: "Please select one time",
+                        },
+                    ]}
+                >
                     <TimePicker
                         inputReadOnly
-                        onSelect={(time) => handleOnSelectTime(time)} 
-                        allowClear={false} 
-                        className="w-full" 
-                        minuteStep={30} 
-                        format={"HH:mm"} 
-                        showNow={false} 
-                        disabledTime={() => ({ 
+                        allowClear={false}
+                        className="w-full"
+                        minuteStep={30}
+                        format={"HH:mm"}
+                        showNow={false}
+                        disabledTime={() => ({
                             disabledHours: () => disabledHours,
                             disabledMinutes(hour) {
-                                if (disabledHours.includes(hour) || hour === -1) {
+                                if (
+                                    disabledHours.includes(hour) ||
+                                    hour === -1
+                                ) {
                                     return [0, 30];
                                 }
                                 const day = dayjs();
@@ -120,7 +154,7 @@ const DeliveryTimeModal = ({
                 </Form.Item>
             </Form>
         </Modal>
-    )
-}
+    );
+};
 
 export default DeliveryTimeModal;
