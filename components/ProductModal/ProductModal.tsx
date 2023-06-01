@@ -18,7 +18,7 @@ import {
     useMemo,
     memo,
 } from "react";
-import { isEmpty, isEqual } from "lodash";
+import { isEmpty, isEqual, orderBy, sortBy } from "lodash";
 import { toast } from "react-toastify";
 import { UploadChangeParam } from "antd/es/upload";
 import {
@@ -59,7 +59,7 @@ const ProductModal = ({
     const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
     const { data: toppings, isFetching: isFetchingToppings } = useToppingsQuery(
-        {}
+        {},
     );
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
@@ -88,13 +88,12 @@ const ProductModal = ({
         const formData = new FormData();
         const params: any = { ...form.getFieldsValue() };
         Object.keys(params).forEach((key: any) =>
-            formData.append(key, params[key])
+            formData.append(key, params[key]),
         );
 
         formData.append("favIcon", fileList[0]?.originFileObj as Blob);
         const sizes = form.getFieldValue("sizes");
         const toppingIds = form.getFieldValue("toppingIds");
-        console.log(toppingIds);
         formData.delete("sizes");
         formData.delete("toppingIds");
         formData.append("sizes", JSON.stringify(sizes));
@@ -112,7 +111,7 @@ const ProductModal = ({
             }
         } catch (error: any) {
             toast.error(
-                error?.data?.message || "Sorry. Some thing went wrong!"
+                error?.data?.message || "Sorry. Some thing went wrong!",
             );
             setIsLoadingBtn(false);
             return;
@@ -139,18 +138,23 @@ const ProductModal = ({
         if (isOpen) {
             form.resetFields();
             if (isEdit && !isEmpty(product)) {
+                const newSize = orderBy(
+                    product.sizes,
+                    ["price"],
+                    ["asc"],
+                ) as ISizeProduct[];
                 const newProduct = {
                     ...product,
-                    sizes: (product.sizes || []).map(
+                    sizes: (newSize || []).map(
                         (size: ISizeProduct, index: number) => ({
                             name: size.size,
                             price: size.price,
                             id: index,
                             size: size.size,
-                        })
+                        }),
                     ),
                     toppingIds: product.toppingIds.filter((toppingId) =>
-                        toppings?.some((topping) => topping.id === toppingId)
+                        toppings?.some((topping) => topping.id === toppingId),
                     ),
                 };
 
@@ -164,6 +168,16 @@ const ProductModal = ({
                 ]);
             } else {
                 setFileList([]);
+                form.setFieldsValue({
+                    sizes: [
+                        {
+                            name: "Default",
+                            price: 0,
+                            id: 0,
+                            size: "Default",
+                        },
+                    ],
+                });
             }
         }
     }, [product, isOpen]);
@@ -302,6 +316,7 @@ const ProductModal = ({
                                     >
                                         <Input
                                             style={{ padding: "4px 10px" }}
+                                            disabled={field.key === 0}
                                         />
                                     </Form.Item>
                                     <Form.Item
@@ -320,12 +335,15 @@ const ProductModal = ({
                                             max={100}
                                             addonAfter="$"
                                             stringMode={false}
+                                            disabled={field.key === 0}
                                         />
                                     </Form.Item>
-                                    <MinusCircleOutlined
-                                        style={{ marginRight: 10 }}
-                                        onClick={() => remove(field.name)}
-                                    />
+                                    {field.key !== 0 && (
+                                        <MinusCircleOutlined
+                                            style={{ marginRight: 10 }}
+                                            onClick={() => remove(field.name)}
+                                        />
+                                    )}
                                 </Space>
                             ))}
 
@@ -338,6 +356,7 @@ const ProductModal = ({
                                     icon={<PlusOutlined />}
                                     style={{
                                         backgroundColor: "var(--orange-1)",
+                                        color: "#fff",
                                     }}
                                 >
                                     Add Size

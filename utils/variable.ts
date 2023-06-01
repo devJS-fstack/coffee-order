@@ -25,3 +25,8 @@ export const STATUS_USERS = {
     ACTIVE: "ACTIVE",
     DISABLED: "DISABLED",
 };
+
+export const STATUS_ORDER = {
+    CREATED: "CREATED",
+    DISABLED: "DISABLED",
+};

@@ -1,4 +1,4 @@
-import { Input, Modal, Radio } from "antd";
+import { Badge, Input, Modal, Radio } from "antd";
 import {
     useState,
     Dispatch,
@@ -62,7 +62,7 @@ const AddProductModal = ({
 
     const [sizeId, setSizeId] = useState(0);
     const [totalPrice, setTotalPrice] = useState(
-        productOrder?.totalPrice || product?.price || 0
+        productOrder?.totalPrice || product?.price || 0,
     );
 
     const handleMinusQuantity = (e: any) => {
@@ -132,7 +132,7 @@ const AddProductModal = ({
             const toppingsMapped: any = (toppings || []).reduce(
                 (acc, topping) => {
                     const toppingOrder = productOrder?.toppings.find(
-                        (element) => element.toppingId === topping.id
+                        (element) => element.toppingId === topping.id,
                     );
                     return {
                         ...acc,
@@ -143,7 +143,7 @@ const AddProductModal = ({
                             (toppingOrder?.quantity || 0) < 2,
                     };
                 },
-                {}
+                {},
             );
 
             setObjToppingQuantity(toppingsMapped);
@@ -214,7 +214,7 @@ const AddProductModal = ({
             const toppingsMapped: any = (toppings || []).reduce(
                 (acc, topping) => {
                     const toppingOrder = productOrder?.toppings.find(
-                        (element) => element.toppingId === topping.id
+                        (element) => element.toppingId === topping.id,
                     );
                     return {
                         ...acc,
@@ -225,7 +225,7 @@ const AddProductModal = ({
                             (toppingOrder?.quantity || 0) < 2,
                     };
                 },
-                {}
+                {},
             );
             setObjToppingQuantity(toppingsMapped);
             setObjectQuantity({
@@ -241,7 +241,7 @@ const AddProductModal = ({
             setSizeId(newSizeId);
             setTotalPrice(
                 (productOrder?.totalPrice || 0) +
-                    sumBy(productOrder?.toppings, "totalPrice")
+                    sumBy(productOrder?.toppings, "totalPrice"),
             );
         }
     }, [productOrder, isOpen, isFetchingProduct]);
@@ -265,7 +265,7 @@ const AddProductModal = ({
     const handleOnOk = async () => {
         setIsLoadingBtn(true);
         const toppingIds = Object.keys(objToppingQuantity).filter(
-            (key) => key.includes("quantity") && objToppingQuantity[key]
+            (key) => key.includes("quantity") && objToppingQuantity[key],
         );
         const toppings = toppingIds.map((key) => ({
             toppingId: toNumber(key.replace("quantity", "")),
@@ -304,11 +304,9 @@ const AddProductModal = ({
                     sizeId,
                     toppingOrders: toppings,
                 });
-                delay(2000).then(async () => {
-                    setIsLoadingBtn(false);
-                    setIsOpen(false);
-                    await refetchOrder();
-                });
+                setIsLoadingBtn(false);
+                setIsOpen(false);
+                refetchOrder();
             }
         }
     };
@@ -426,7 +424,7 @@ const AddProductModal = ({
                                         value={sizeId}
                                         onChange={(value) => {
                                             handleOnChangeSize(
-                                                value.target.value
+                                                value.target.value,
                                             );
                                         }}
                                     >
@@ -467,49 +465,53 @@ const AddProductModal = ({
                                                 + {topping.price} $
                                             </span>
                                         </div>
-                                        <div className="card-product-quantity-config flex items-center">
-                                            <div
-                                                onClick={(e) => {
-                                                    handleMinusToppingQuantity(
-                                                        e,
-                                                        topping.id
-                                                    );
-                                                }}
-                                                className={`quantity-extra flex justify-center items-center cursor-pointer ${
-                                                    objToppingQuantity[
-                                                        `${topping.id}enabledMinus`
-                                                    ]
-                                                        ? ""
-                                                        : "hide"
-                                                }`}
-                                            >
-                                                <div className="decrease"></div>
+                                        {!topping.enable || topping.deleted ? (
+                                            <Badge count={"Not Available"} />
+                                        ) : (
+                                            <div className="card-product-quantity-config flex items-center">
+                                                <div
+                                                    onClick={(e) => {
+                                                        handleMinusToppingQuantity(
+                                                            e,
+                                                            topping.id,
+                                                        );
+                                                    }}
+                                                    className={`quantity-extra flex justify-center items-center cursor-pointer ${
+                                                        objToppingQuantity[
+                                                            `${topping.id}enabledMinus`
+                                                        ]
+                                                            ? ""
+                                                            : "hide"
+                                                    }`}
+                                                >
+                                                    <div className="decrease"></div>
+                                                </div>
+                                                <span className="card-product-quantity extra">
+                                                    {
+                                                        objToppingQuantity[
+                                                            `${topping.id}quantity`
+                                                        ]
+                                                    }
+                                                </span>
+                                                <div
+                                                    onClick={(e) => {
+                                                        handlePlusToppingQuantity(
+                                                            e,
+                                                            topping.id,
+                                                        );
+                                                    }}
+                                                    className={`quantity-extra flex justify-center items-center cursor-pointer ${
+                                                        objToppingQuantity[
+                                                            `${topping.id}enabledPlus`
+                                                        ]
+                                                            ? ""
+                                                            : "cursor-not-allowed"
+                                                    }`}
+                                                >
+                                                    <div className="increase"></div>
+                                                </div>
                                             </div>
-                                            <span className="card-product-quantity extra">
-                                                {
-                                                    objToppingQuantity[
-                                                        `${topping.id}quantity`
-                                                    ]
-                                                }
-                                            </span>
-                                            <div
-                                                onClick={(e) => {
-                                                    handlePlusToppingQuantity(
-                                                        e,
-                                                        topping.id
-                                                    );
-                                                }}
-                                                className={`quantity-extra flex justify-center items-center cursor-pointer ${
-                                                    objToppingQuantity[
-                                                        `${topping.id}enabledPlus`
-                                                    ]
-                                                        ? ""
-                                                        : "cursor-not-allowed"
-                                                }`}
-                                            >
-                                                <div className="increase"></div>
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

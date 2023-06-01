@@ -18,6 +18,8 @@ export type ITopping = {
     id: number;
     nameTopping: string;
     price: number;
+    enable: boolean;
+    deleted: boolean;
 };
 
 export type ISizeProduct = {
@@ -55,7 +57,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                     total: number;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return {
                     products: baseQueryReturnValue.data,
@@ -79,7 +81,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
                     };
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return {
                     ...baseQueryReturnValue.data,

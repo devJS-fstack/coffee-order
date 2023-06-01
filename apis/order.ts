@@ -69,10 +69,12 @@ export interface IResponseToppingOrder {
     totalPrice: number;
     toppingId: number;
     productOrderId: number;
+    status: string;
     Topping: {
         id: number;
         nameTopping: string;
         price: number;
+        enabled: boolean;
     };
 }
 export interface IResponseProductOrder {
@@ -110,7 +112,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -126,7 +128,23 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg
+                arg,
+            ) {
+                return baseQueryReturnValue.data;
+            },
+        }),
+        ordersByAdmin: builder.query({
+            query: () => ({
+                url: `${basePath}/all`,
+                method: "GET",
+            }),
+            transformResponse(
+                baseQueryReturnValue: {
+                    data: IResponseOrders[];
+                    message: string;
+                },
+                meta,
+                arg,
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -174,4 +192,5 @@ export const {
     useDeleteOrderMutation,
     usePlaceOrderMutation,
     useOrdersQuery,
+    useOrdersByAdminQuery,
 } = orderApiSlice;

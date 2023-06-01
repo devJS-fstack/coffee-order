@@ -7,6 +7,8 @@ import { delay } from "../../utils/helper";
 import { ToastContainer } from "react-toastify";
 import CategoryAdmin from "./service/category";
 import ToppingAdmin from "./service/topping";
+import OrderAdmin from "./service/order";
+import VoucherAdmin from "./service/voucher";
 
 const components = (key: string, args: any) => {
     switch (key) {
@@ -20,6 +22,10 @@ const components = (key: string, args: any) => {
             return <ProductAdmin {...args} />;
         case "topping":
             return <ToppingAdmin {...args} />;
+        case "order":
+            return <OrderAdmin {...args} />;
+        case "voucher":
+            return <VoucherAdmin {...args} />;
         default:
             return <UserPage {...args} />;
     }

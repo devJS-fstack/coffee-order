@@ -108,3 +108,7 @@ svg {
 .ant-select-multiple .ant-select-selection-item {
     background: rgb(255 111 0 / 60%) !important;
 }
+
+.ant-table-wrapper .ant-table-thead .ant-table-cell {
+    background-color: #eff3ff;
+}

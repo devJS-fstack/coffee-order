@@ -83,8 +83,12 @@ const NavigationAdmin = ({
                 getItem("Topping", "topping", <FcMindMap />),
             ],
         ),
-        getItem("Order", "6", <FaShoppingCart />),
-        getItem("Voucher", "7", <FcMoneyTransfer />),
+        getItem("Order", "6", <FaShoppingCart />, () => {
+            handleChangePage("order");
+        }),
+        getItem("Voucher", "7", <FcMoneyTransfer />, () => {
+            handleChangePage("voucher");
+        }),
         getItem("Log Out", "8", <GrLogout />, () => handleSignOut()),
     ];
     const toggleCollapsed = () => {
