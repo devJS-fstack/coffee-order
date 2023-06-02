@@ -57,6 +57,10 @@ export interface IResponseOrder {
     status: string;
     created: string;
     voucherId: number;
+    orderedDate: string;
+    processedDate: string;
+    shipDate: string;
+    receivedDate: string;
 }
 
 export interface IResponseOrders extends IResponseOrder {
@@ -121,7 +125,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -137,7 +141,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -153,7 +157,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg
+                arg,
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -190,6 +194,16 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                 body: payload,
             }),
         }),
+        markStatus: builder.mutation({
+            query: ({ orderId }: { orderId: number }) => ({
+                url: `${basePath}/mark-status/${orderId}`,
+                method: "PUT",
+            }),
+            transformErrorResponse: (error: any) => {
+                const { data } = error || {};
+                return data.message || "Sorry! Something went wrong";
+            },
+        }),
     }),
 });
 
@@ -201,5 +215,7 @@ export const {
     useDeleteOrderMutation,
     usePlaceOrderMutation,
     useOrdersQuery,
+    useLazyOrdersByAdminQuery,
     useOrdersByAdminQuery,
+    useMarkStatusMutation,
 } = orderApiSlice;

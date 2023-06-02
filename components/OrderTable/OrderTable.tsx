@@ -1,11 +1,51 @@
 import { PlusOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Tag } from "antd";
+import { Button, Dropdown, Tag, TreeSelect } from "antd";
 import { GrStatusDisabledSmall } from "react-icons/gr";
 import { FiTrash } from "react-icons/fi";
-import { RiMoreFill } from "react-icons/ri";
+import { AiFillFilter } from "react-icons/ai";
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { IResponseOrders, useOrdersByAdminQuery } from "../../apis/order";
 import TableV1 from "../TableV1";
+import moment from "moment";
+
+const cssStatus: any = {
+    CREATED: {
+        css: {},
+        status: "Created",
+    },
+    ORDERED: {
+        css: {
+            backgroundColor: "var(--yellow-100)",
+            borderColor: "var(--yellow-100)",
+            color: "var(--orange-600)",
+        },
+        status: "Ordered",
+    },
+    PROCESSED: {
+        css: {
+            backgroundColor: "var(--blue-100)",
+            borderColor: "var(--blue-100)",
+            color: " var(--blue-600)",
+        },
+        status: "Processed",
+    },
+    IN_TRANSIT: {
+        css: {
+            backgroundColor: "var(--blue-100)",
+            borderColor: "var(--blue-100)",
+            color: " var(--blue-600)",
+        },
+        status: "In-transit",
+    },
+    RECEIVED: {
+        css: {
+            backgroundColor: "var(--green-100)",
+            borderColor: "var(--green-100)",
+            color: " var(--green-600)",
+        },
+        status: "Received",
+    },
+};
 
 const OrderTable = ({
     orders,
@@ -19,10 +59,52 @@ const OrderTable = ({
     const [orderIdSelect, setOrderIdSelect] = useState(0);
 
     useEffect(() => {
-        setOrderIdSelect(orders?.[0].id || 0);
-    }, []);
+        if (!orderIdSelect) {
+            setOrderIdSelect(orders?.[0].id || 0);
+        }
+    }, [orders]);
     return (
-        <div className="w-full pt-8 px-8">
+        <div className="w-full px-8">
+            <div className="flex justify-end py-4">
+                <Dropdown
+                    overlayStyle={{
+                        width: 300,
+                    }}
+                    dropdownRender={(menu) => {
+                        return (
+                            <div
+                                style={{
+                                    backgroundColor: "#fff",
+                                    borderRadius: "15px",
+                                }}
+                            >
+                                Hello
+                            </div>
+                        );
+                    }}
+                    trigger={["click"]}
+                >
+                    <Button
+                        className="flex items-center relative bg-gray50 border-gray200 border-solid"
+                        icon={
+                            <span
+                                className="mr-2 relative"
+                                style={{ height: 14, width: 14 }}
+                            >
+                                <AiFillFilter
+                                    style={{
+                                        position: "absolute",
+                                        right: 4,
+                                    }}
+                                />
+                            </span>
+                        }
+                        onClick={() => {}}
+                    >
+                        Filter
+                    </Button>
+                </Dropdown>
+            </div>
             <TableV1
                 onRow={(record, index) => {
                     return {
@@ -41,6 +123,20 @@ const OrderTable = ({
                 loading={isFetchingOrder}
                 rowKey={"id"}
                 columns={[
+                    {
+                        title: "Created",
+                        dataIndex: "created",
+                        key: "created",
+                        render: (value, record) => {
+                            return (
+                                <div className="flex items-center gap-x-2">
+                                    <div>
+                                        {moment(value).format("MMMM.DD.YYYY")}
+                                    </div>
+                                </div>
+                            );
+                        },
+                    },
                     {
                         title: "Name Receiver",
                         dataIndex: "nameReceiver",
@@ -85,7 +181,7 @@ const OrderTable = ({
                         render: (value, record) => {
                             return (
                                 <div className="flex items-center gap-x-2">
-                                    <div>{value}</div>
+                                    <div>Cash</div>
                                 </div>
                             );
                         },
@@ -94,8 +190,25 @@ const OrderTable = ({
                         title: "Status",
                         dataIndex: "status",
                         key: "status",
+                        filterMode: "menu",
                         render: (value, _) => {
-                            return <Tag>{value}</Tag>;
+                            return (
+                                <Tag style={cssStatus[value]?.css}>
+                                    {cssStatus[value]?.status}
+                                </Tag>
+                            );
+                        },
+                    },
+                    {
+                        title: "Shipping Fee",
+                        dataIndex: "shippingFee",
+                        key: "shippingFee",
+                        render: (value, record) => {
+                            return (
+                                <div className="flex items-center gap-x-2">
+                                    <div>{value} $</div>
+                                </div>
+                            );
                         },
                     },
                     {

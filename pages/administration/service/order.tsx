@@ -1,19 +1,36 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Divider, Dropdown, Tag } from "antd";
 import { useEffect, useState } from "react";
-import { IResponseOrders, useOrdersByAdminQuery } from "../../../apis/order";
+import {
+    IResponseOrders,
+    useLazyOrdersByAdminQuery,
+    useOrdersByAdminQuery,
+} from "../../../apis/order";
 import OrderTable from "../../../components/OrderTable/OrderTable";
 import OrderDetailAdmin from "../../../components/OrderDetailAdmin/OrderDetailAdmin";
 import CustomSpin from "../../../components/Spin";
+import { isEmpty } from "lodash";
 
 const OrderAdmin = ({}: {}) => {
-    const { data: orders, isFetching: isFetchingOrder } = useOrdersByAdminQuery(
-        {}
-    );
+    const [
+        refetchOrders,
+        {
+            data: orders,
+            isFetching: isFetchingOrder,
+            // refetch: refetchOrders,
+        },
+    ] = useLazyOrdersByAdminQuery();
     const [orderCurrent, setOrderCurrent] = useState({} as IResponseOrders);
 
     useEffect(() => {
-        setOrderCurrent(orders?.[0] as IResponseOrders);
+        const orderSet: any = isEmpty(orderCurrent)
+            ? { ...orders?.[0] }
+            : { ...orders?.find((order) => order.id === orderCurrent.id) };
+        setOrderCurrent(orderSet as IResponseOrders);
+    }, [isFetchingOrder]);
+
+    useEffect(() => {
+        refetchOrders({});
     }, []);
 
     return (
@@ -24,11 +41,11 @@ const OrderAdmin = ({}: {}) => {
                 setOrderCurrent={setOrderCurrent}
             />
             <Divider />
-            {isFetchingOrder ? (
-                <CustomSpin />
-            ) : (
-                <OrderDetailAdmin order={orderCurrent} />
-            )}
+            <OrderDetailAdmin
+                refetchData={refetchOrders}
+                order={orderCurrent}
+                isFetchingData={isFetchingOrder}
+            />
         </div>
     );
 };
