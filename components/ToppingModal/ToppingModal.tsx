@@ -89,7 +89,6 @@ const ToppingModal = ({
     const handleOnFinish = async () => {
         setIsLoadingBtn(true);
         const payload = form.getFieldsValue();
-        console.log(payload);
         let message = "Create topping successfully";
         try {
             if (isEdit) {

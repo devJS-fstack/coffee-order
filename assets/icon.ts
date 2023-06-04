@@ -10,4 +10,5 @@ export const STEP_ICONS = {
     IN_TRANSITED: `${basePath}/step_intransited.svg`,
     RECEIVE: `${basePath}/step_receive.svg`,
     RECEIVED: `${basePath}/step_received.svg`,
+    RECEIVED_LATE: `${basePath}/step_received_late.svg`,
 };

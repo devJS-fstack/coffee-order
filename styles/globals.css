@@ -184,3 +184,82 @@ svg {
 .ant-select-selection-selected-value {
     width: 300px !important;
 }
+
+.filter-status {
+    max-height: 310px;
+    overflow-y: overlay;
+    padding: 16px 16px 0;
+}
+
+.filter-status .checkbox-title {
+    font-family: "Nunito Sans";
+}
+
+.ant-checkbox-group {
+    flex-direction: column;
+}
+
+.ant-checkbox-group span {
+    font-family: "Nunito Sans" !important;
+    font-size: 14px;
+}
+
+.ant-checkbox-wrapper {
+    margin-left: 8px !important;
+    margin-bottom: 0.75rem!important;
+}
+
+.button-group {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.button-group span {
+    font-family: "Nunito Sans" !important;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.group-btn__clear {
+    background: transparent;
+    border-color: transparent;
+    color: var(--red-400);
+}
+
+.group-btn__clear:hover {
+    border-color: transparent !important;
+    color: var(--red-400) !important;
+}
+
+.group-btn__clear:focus-visible {
+    outline: none !important;
+}
+
+.group-btn__clear:hover span {
+    text-decoration: underline;
+}
+
+.group-btn__apply {
+    height: 24px;
+    display: flex;
+    padding: 0 8px !important;
+    align-items: center;
+    background-color: var(--orange-1);
+    color: #fff
+}
+
+.group-btn__apply:hover {
+    border-color: transparent !important;
+    background: var(--orange-2) !important;
+    color: #fff !important;
+}
+
+.group-btn__apply:hover span {
+    color: #fff !important;
+}
+
+.icon-received__late {
+    position: absolute;
+    right: -18px;
+}

@@ -1,6 +1,6 @@
 import { RcFile } from "antd/es/upload";
 import cryptoJs from "crypto-js";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { uniq } from "lodash";
 import moment from "moment";
 import { toast } from "react-toastify";
@@ -108,4 +108,9 @@ export const checkFileCondition = (file: RcFile) => {
         toast.error("Image must smaller than 1MB!");
     }
     return isLt2M;
+};
+
+export const disablePastDate = (current: Dayjs) => {
+    const today = dayjs().startOf("day");
+    return current.isBefore(today);
 };

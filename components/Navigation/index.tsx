@@ -5,7 +5,7 @@ import {
     MenuUnfoldOutlined,
     PieChartOutlined,
 } from "@ant-design/icons";
-import { Button, Menu, MenuProps } from "antd";
+import { Badge, Button, Menu, MenuProps } from "antd";
 import { useState, Dispatch, SetStateAction, useEffect } from "react";
 import { FaUser, FaShoppingCart } from "react-icons/fa";
 import {
@@ -23,6 +23,7 @@ import { store } from "../../app/store";
 import { logOut } from "../../auth/authSlice";
 import { useRouter } from "next/router";
 import { delay } from "../../utils/helper";
+import { useNumberPlacedOrderQuery } from "../../apis/order";
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -31,7 +32,7 @@ function getItem(
     key: React.Key,
     icon?: React.ReactNode,
     onClick?: MenuClickEventHandler,
-    children?: MenuItem[],
+    children?: MenuItem[]
 ): MenuItem {
     return {
         key,
@@ -56,8 +57,12 @@ const NavigationAdmin = ({
     const router = useRouter();
     const handleChangePage = (key: string) => {
         setPage(key);
+        refetchCountPlacedOrder();
     };
+    const { data: countPlacedOrder, refetch: refetchCountPlacedOrder } =
+        useNumberPlacedOrderQuery({});
 
+    console.log(countPlacedOrder);
     const handleSignOut = () => {
         setIsLoading(true);
         delay(1000).then(() => {
@@ -81,11 +86,19 @@ const NavigationAdmin = ({
                 getItem("Category", "category", <FcCopyright />),
                 getItem("Product", "product", <FcLinux />),
                 getItem("Topping", "topping", <FcMindMap />),
-            ],
+            ]
         ),
-        getItem("Order", "6", <FaShoppingCart />, () => {
-            handleChangePage("order");
-        }),
+        getItem(
+            <span className="flex justify-between items-center">
+                Order
+                <Badge count={countPlacedOrder} style={{ fontSize: 12 }} />
+            </span>,
+            "6",
+            <FaShoppingCart />,
+            () => {
+                handleChangePage("order");
+            }
+        ),
         getItem("Voucher", "7", <FcMoneyTransfer />, () => {
             handleChangePage("voucher");
         }),

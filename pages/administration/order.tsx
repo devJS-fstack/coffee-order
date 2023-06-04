@@ -5,10 +5,10 @@ import {
     IResponseOrders,
     useLazyOrdersByAdminQuery,
     useOrdersByAdminQuery,
-} from "../../../apis/order";
-import OrderTable from "../../../components/OrderTable/OrderTable";
-import OrderDetailAdmin from "../../../components/OrderDetailAdmin/OrderDetailAdmin";
-import CustomSpin from "../../../components/Spin";
+} from "../../apis/order";
+import OrderTable from "../../components/OrderTable/OrderTable";
+import OrderDetailAdmin from "../../components/OrderDetailAdmin/OrderDetailAdmin";
+import CustomSpin from "../../components/Spin";
 import { isEmpty } from "lodash";
 
 const OrderAdmin = ({}: {}) => {
@@ -24,8 +24,10 @@ const OrderAdmin = ({}: {}) => {
 
     useEffect(() => {
         const orderSet: any = isEmpty(orderCurrent)
-            ? { ...orders?.[0] }
-            : { ...orders?.find((order) => order.id === orderCurrent.id) };
+            ? { ...orders?.find((order) => order.status === "ORDERED") }
+            : {
+                  ...orders?.find((order) => order.id === orderCurrent.id),
+              };
         setOrderCurrent(orderSet as IResponseOrders);
     }, [isFetchingOrder]);
 
@@ -34,7 +36,10 @@ const OrderAdmin = ({}: {}) => {
     }, []);
 
     return (
-        <div className="w-full py-4 overflow-auto">
+        <div
+            className="w-full py-4 overflow-auto"
+            style={{ overflowX: "hidden" }}
+        >
             <OrderTable
                 isFetchingOrder={isFetchingOrder}
                 orders={orders}

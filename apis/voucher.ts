@@ -16,6 +16,7 @@ export type IVoucher = {
     dateStart: string;
     limitUse: number;
     status: string;
+    imageUrl: string;
 };
 
 export const voucherApiSlice = apiSlice.injectEndpoints({
@@ -52,8 +53,25 @@ export const voucherApiSlice = apiSlice.injectEndpoints({
                 return baseQueryReturnValue?.data;
             },
         }),
+        allVoucher: builder.query({
+            query: () => ({
+                url: `${basePath}/all`,
+                method: "GET",
+            }),
+            transformResponse(
+                baseQueryReturnValue: { message: string; data?: IVoucher[] },
+                meta,
+                arg
+            ) {
+                return baseQueryReturnValue?.data;
+            },
+        }),
     }),
 });
 
-export const { useVouchersQuery, useDiscountQuery, useLazyDiscountQuery } =
-    voucherApiSlice;
+export const {
+    useVouchersQuery,
+    useDiscountQuery,
+    useLazyDiscountQuery,
+    useAllVoucherQuery,
+} = voucherApiSlice;

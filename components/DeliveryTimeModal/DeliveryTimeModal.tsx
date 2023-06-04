@@ -9,6 +9,17 @@ import moment from "moment";
 import { IDeliveryInfo } from "../AddressModal/AddressModal";
 import dayjs from "dayjs";
 
+const disabledDate = (current: any) => {
+    const today = moment().startOf("day");
+    const tomorrow = moment().add(1, "days").startOf("day");
+    const nextTomorrow = moment().add(2, "days").startOf("day");
+    return !(
+        current.isSame(today, "day") ||
+        current.isSame(tomorrow, "day") ||
+        current.isSame(nextTomorrow, "day")
+    );
+};
+
 const DeliveryTimeModal = ({
     isOpen,
     setIsOpen,
@@ -47,17 +58,6 @@ const DeliveryTimeModal = ({
             date: dateStr,
             time: timeStr,
         }));
-    };
-
-    const disabledDate = (current: any) => {
-        const today = moment().startOf("day");
-        const tomorrow = moment().add(1, "days").startOf("day");
-        const nextTomorrow = moment().add(2, "days").startOf("day");
-        return !(
-            current.isSame(today, "day") ||
-            current.isSame(tomorrow, "day") ||
-            current.isSame(nextTomorrow, "day")
-        );
     };
 
     const handleOnSelectDate = (date: dayjs.Dayjs) => {

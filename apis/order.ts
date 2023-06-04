@@ -125,7 +125,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -141,7 +141,23 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
+            ) {
+                return baseQueryReturnValue.data;
+            },
+        }),
+        numberPlacedOrder: builder.query({
+            query: () => ({
+                url: `${basePath}/placed-order`,
+                method: "GET",
+            }),
+            transformResponse(
+                baseQueryReturnValue: {
+                    data: number;
+                    message: string;
+                },
+                meta,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
@@ -157,11 +173,12 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     message: string;
                 },
                 meta,
-                arg,
+                arg
             ) {
                 return baseQueryReturnValue.data;
             },
         }),
+
         updateProductOrder: builder.mutation({
             query: (payload: IPayloadUpdateProductOrder) => ({
                 url: `${basePath}`,
@@ -218,4 +235,5 @@ export const {
     useLazyOrdersByAdminQuery,
     useOrdersByAdminQuery,
     useMarkStatusMutation,
+    useNumberPlacedOrderQuery,
 } = orderApiSlice;

@@ -7,8 +7,8 @@ import { delay } from "../../utils/helper";
 import { ToastContainer } from "react-toastify";
 import CategoryAdmin from "./service/category";
 import ToppingAdmin from "./service/topping";
-import OrderAdmin from "./service/order";
-import VoucherAdmin from "./service/voucher";
+import OrderAdmin from "./order";
+import VoucherAdmin from "./voucher";
 
 const components = (key: string, args: any) => {
     switch (key) {
@@ -35,7 +35,6 @@ const Admin = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [page, setPage] = useState("user");
     const [isLoading, setIsLoading] = useState(false);
-
     useEffect(() => {
         setIsLoading(true);
         delay(500).then(() => {

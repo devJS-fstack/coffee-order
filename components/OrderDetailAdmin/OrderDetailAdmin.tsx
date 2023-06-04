@@ -1,4 +1,4 @@
-import { Button, Collapse, Divider, Steps } from "antd";
+import { Button, Collapse, Divider, Steps, Tooltip } from "antd";
 import { AiTwotoneCalendar } from "react-icons/ai";
 import { STEP_ICONS } from "../../assets/icon";
 import {
@@ -6,7 +6,7 @@ import {
     IResponseProductOrder,
     useMarkStatusMutation,
 } from "../../apis/order";
-import { PlusOutlined } from "@ant-design/icons";
+import { InfoCircleTwoTone } from "@ant-design/icons";
 import NoData from "../NoData";
 import { useEffect, useState } from "react";
 import { delay } from "../../utils/helper";
@@ -14,6 +14,7 @@ import CustomSpin from "../Spin";
 import moment from "moment";
 import { toast } from "react-toastify";
 import ConfirmModal from "../ConfirmModal/ConfirmModal";
+import { isEmpty } from "lodash";
 
 const headerCollapse = [
     {
@@ -78,12 +79,14 @@ const OrderDetailAdmin = ({
         processedDate,
     } = order as IResponseOrders;
     const [isLoading, setIsLoading] = useState(false);
+    console.log(order?.plannedReceivedDate);
+    console.log(order?.receivedDate);
     const [isOpenConfirm, setIsOpenConfirm] = useState(false);
     const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const [mMarkStatusOrder] = useMarkStatusMutation();
     const getProductOrderByKey = (
         key: string,
-        productOrder: IResponseProductOrder,
+        productOrder: IResponseProductOrder
     ) => {
         switch (key) {
             case "nameProduct":
@@ -148,252 +151,308 @@ const OrderDetailAdmin = ({
             {isLoading ? (
                 <CustomSpin style={{ alignItems: "baseline" }} />
             ) : (
-                <>
-                    <div className="flex justify-end pb-8">
-                        {![
-                            statusOrders.CREATED,
-                            statusOrders.RECEIVED,
-                        ].includes(status) && (
-                            <Button
-                                className="hover-btn-custom relative"
-                                style={{
-                                    backgroundColor: "var(--orange-1)",
-                                    color: "#fff",
-                                }}
-                                onClick={() => {
-                                    setIsOpenConfirm(true);
-                                }}
-                            >
-                                Mark as {markByStatus[status]}
-                            </Button>
-                        )}
-                    </div>
-                    <Steps
-                        current={steps[status]}
-                        labelPlacement="vertical"
-                        items={[
-                            {
-                                description: (
-                                    <div className="flex flex-col">
-                                        <span>Created</span>
-                                        <span className="ant-step-description__date">
-                                            {created
-                                                ? moment(created)
-                                                      .utc()
-                                                      .format(
-                                                          "MMMM.DD.YYYY hh:mm A",
-                                                      )
-                                                : ""}
-                                        </span>
-                                    </div>
-                                ),
-                                icon: <img src={STEP_ICONS.CREATED} />,
-                            },
-                            {
-                                description: (
-                                    <div className="flex flex-col">
-                                        <span>Ordered</span>
-                                        <span className="ant-step-description__date">
-                                            {orderedDate
-                                                ? moment(orderedDate)
-                                                      .utc()
-                                                      .format(
-                                                          "MMMM.DD.YYYY hh:mm A",
-                                                      )
-                                                : ""}
-                                        </span>
-                                    </div>
-                                ),
-                                icon: (
-                                    <img
-                                        src={
-                                            steps[status] >=
-                                            steps[statusOrders.ORDERED]
-                                                ? STEP_ICONS.ORDERED
-                                                : STEP_ICONS.ORDER
-                                        }
-                                    />
-                                ),
-                            },
-                            {
-                                description: (
-                                    <div className="flex flex-col">
-                                        <span>Processed</span>
-                                        <span className="ant-step-description__date">
-                                            {processedDate
-                                                ? moment(processedDate)
-                                                      .utc()
-                                                      .format(
-                                                          "MMMM.DD.YYYY hh:mm A",
-                                                      )
-                                                : ""}
-                                        </span>
-                                    </div>
-                                ),
-                                icon: (
-                                    <img
-                                        src={
-                                            steps[status] >=
-                                            steps[statusOrders.PROCESSED]
-                                                ? STEP_ICONS.PROCESSED
-                                                : STEP_ICONS.PROCESS
-                                        }
-                                    />
-                                ),
-                            },
-                            {
-                                description: (
-                                    <div className="flex flex-col">
-                                        <span>In-transit</span>
-                                        <span className="ant-step-description__date">
-                                            {shipDate
-                                                ? moment(shipDate)
-                                                      .utc()
-                                                      .format(
-                                                          "MMMM.DD.YYYY hh:mm A",
-                                                      )
-                                                : ""}
-                                        </span>
-                                    </div>
-                                ),
-                                icon: (
-                                    <img
-                                        src={
-                                            steps[status] >=
-                                            steps[statusOrders.IN_TRANSIT]
-                                                ? STEP_ICONS.IN_TRANSITED
-                                                : STEP_ICONS.IN_TRANSIT
-                                        }
-                                    />
-                                ),
-                            },
-                            {
-                                description: (
-                                    <div className="flex flex-col">
-                                        <span>Received</span>
-                                        <span className="ant-step-description__date">
-                                            {receivedDate
-                                                ? moment(receivedDate)
-                                                      .utc()
-                                                      .format(
-                                                          "MMMM.DD.YYYY hh:mm A",
-                                                      )
-                                                : ""}
-                                        </span>
-                                    </div>
-                                ),
-                                icon: (
-                                    <img
-                                        src={
-                                            status === statusOrders.RECEIVED
-                                                ? STEP_ICONS.RECEIVED
-                                                : STEP_ICONS.RECEIVE
-                                        }
-                                    />
-                                ),
-                            },
-                        ]}
-                    />
-                    <div className="coffee-collapse mt-8 ">
-                        {order?.productOrders?.map((productOrder) => (
-                            <Collapse className="mt-4" key={productOrder.id}>
-                                <Collapse.Panel
-                                    showArrow={false}
-                                    header={
-                                        <div className="flex">
-                                            {headerCollapse.map((header) => (
-                                                <div
-                                                    style={{ width: 250 }}
-                                                    className="header-collapse__item"
-                                                    key={header.key}
-                                                >
-                                                    <div className="header-collapse__item-title">
-                                                        <span>
-                                                            {header.title}
-                                                        </span>
-                                                    </div>
-                                                    <div className="header-collapse__item-value">
-                                                        <span>
-                                                            {getProductOrderByKey(
-                                                                header.key,
-                                                                productOrder,
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            ))}
+                !isEmpty(order) && (
+                    <>
+                        <div className="flex justify-end pb-8">
+                            {![
+                                statusOrders.CREATED,
+                                statusOrders.RECEIVED,
+                            ].includes(status) && (
+                                <Button
+                                    className="hover-btn-custom relative"
+                                    style={{
+                                        backgroundColor: "var(--orange-1)",
+                                        color: "#fff",
+                                    }}
+                                    onClick={() => {
+                                        setIsOpenConfirm(true);
+                                    }}
+                                >
+                                    Mark as {markByStatus[status]}
+                                </Button>
+                            )}
+                        </div>
+                        <Steps
+                            current={steps[status]}
+                            labelPlacement="vertical"
+                            items={[
+                                {
+                                    description: (
+                                        <div className="flex flex-col">
+                                            <span>Created</span>
+                                            <span className="ant-step-description__date">
+                                                {created
+                                                    ? moment(created)
+                                                          .utc()
+                                                          .format(
+                                                              "MMMM.DD.YYYY hh:mm A"
+                                                          )
+                                                    : ""}
+                                            </span>
                                         </div>
-                                    }
+                                    ),
+                                    icon: <img src={STEP_ICONS.CREATED} />,
+                                },
+                                {
+                                    description: (
+                                        <div className="flex flex-col">
+                                            <span>Ordered</span>
+                                            <span className="ant-step-description__date">
+                                                {orderedDate
+                                                    ? moment(orderedDate)
+                                                          .utc()
+                                                          .format(
+                                                              "MMMM.DD.YYYY hh:mm A"
+                                                          )
+                                                    : ""}
+                                            </span>
+                                        </div>
+                                    ),
+                                    icon: (
+                                        <img
+                                            src={
+                                                steps[status] >=
+                                                steps[statusOrders.ORDERED]
+                                                    ? STEP_ICONS.ORDERED
+                                                    : STEP_ICONS.ORDER
+                                            }
+                                        />
+                                    ),
+                                },
+                                {
+                                    description: (
+                                        <div className="flex flex-col">
+                                            <span>Processed</span>
+                                            <span className="ant-step-description__date">
+                                                {processedDate
+                                                    ? moment(processedDate)
+                                                          .utc()
+                                                          .format(
+                                                              "MMMM.DD.YYYY hh:mm A"
+                                                          )
+                                                    : ""}
+                                            </span>
+                                        </div>
+                                    ),
+                                    icon: (
+                                        <img
+                                            src={
+                                                steps[status] >=
+                                                steps[statusOrders.PROCESSED]
+                                                    ? STEP_ICONS.PROCESSED
+                                                    : STEP_ICONS.PROCESS
+                                            }
+                                        />
+                                    ),
+                                },
+                                {
+                                    description: (
+                                        <div className="flex flex-col">
+                                            <span>In-transit</span>
+                                            <span className="ant-step-description__date">
+                                                {shipDate
+                                                    ? moment(shipDate)
+                                                          .utc()
+                                                          .format(
+                                                              "MMMM.DD.YYYY hh:mm A"
+                                                          )
+                                                    : ""}
+                                            </span>
+                                        </div>
+                                    ),
+                                    icon: (
+                                        <img
+                                            src={
+                                                steps[status] >=
+                                                steps[statusOrders.IN_TRANSIT]
+                                                    ? STEP_ICONS.IN_TRANSITED
+                                                    : STEP_ICONS.IN_TRANSIT
+                                            }
+                                        />
+                                    ),
+                                },
+                                {
+                                    description: (
+                                        <div className="flex flex-col">
+                                            <span>
+                                                {order.status ===
+                                                statusOrders.RECEIVED ? (
+                                                    moment(
+                                                        order.plannedReceivedDate
+                                                    ).isBefore(
+                                                        order.receivedDate
+                                                    ) ? (
+                                                        "Received"
+                                                    ) : (
+                                                        <span className="relative">
+                                                            <Tooltip
+                                                                placement="topRight"
+                                                                className="icon-received__late"
+                                                                title={`Planned at ${moment(
+                                                                    order.plannedReceivedDate
+                                                                ).format(
+                                                                    "MMMM.DD.YYYY hh:mm A"
+                                                                )}`}
+                                                            >
+                                                                <InfoCircleTwoTone />
+                                                            </Tooltip>
+                                                            Received Late
+                                                        </span>
+                                                    )
+                                                ) : (
+                                                    "Received"
+                                                )}
+                                            </span>
+                                            <span className="ant-step-description__date">
+                                                {receivedDate
+                                                    ? moment(receivedDate)
+                                                          .utc()
+                                                          .format(
+                                                              "MMMM.DD.YYYY hh:mm A"
+                                                          )
+                                                    : ""}
+                                            </span>
+                                        </div>
+                                    ),
+                                    icon: (
+                                        <img
+                                            src={
+                                                status === statusOrders.RECEIVED
+                                                    ? moment(
+                                                          order.plannedReceivedDate
+                                                      ).isBefore(
+                                                          order.receivedDate
+                                                      )
+                                                        ? STEP_ICONS.RECEIVED
+                                                        : STEP_ICONS.RECEIVED_LATE
+                                                    : STEP_ICONS.RECEIVE
+                                            }
+                                        />
+                                    ),
+                                },
+                            ]}
+                        />
+                        <div className="coffee-collapse mt-8 ">
+                            {order?.productOrders?.map((productOrder) => (
+                                <Collapse
+                                    className="mt-4"
                                     key={productOrder.id}
                                 >
-                                    {productOrder.toppings.length ? (
-                                        productOrder.toppings.map((topping) => (
-                                            <div key={topping.id}>
-                                                <div className="flex">
-                                                    <div
-                                                        className="header-collapse__item"
-                                                        style={{ width: 250 }}
-                                                    >
-                                                        <div className="header-collapse__item-title">
-                                                            <span>
-                                                                Topping Name
-                                                            </span>
+                                    <Collapse.Panel
+                                        showArrow={false}
+                                        header={
+                                            <div className="flex">
+                                                {headerCollapse.map(
+                                                    (header) => (
+                                                        <div
+                                                            style={{
+                                                                width: 250,
+                                                            }}
+                                                            className="header-collapse__item"
+                                                            key={header.key}
+                                                        >
+                                                            <div className="header-collapse__item-title">
+                                                                <span>
+                                                                    {
+                                                                        header.title
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                            <div className="header-collapse__item-value">
+                                                                <span>
+                                                                    {getProductOrderByKey(
+                                                                        header.key,
+                                                                        productOrder
+                                                                    )}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="header-collapse__item-value">
-                                                            <span>
-                                                                {
-                                                                    topping
-                                                                        .Topping
-                                                                        .nameTopping
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        className="header-collapse__item"
-                                                        style={{ width: 250 }}
-                                                    >
-                                                        <div className="header-collapse__item-title">
-                                                            <span>
-                                                                Quantity
-                                                            </span>
-                                                        </div>
-                                                        <div className="header-collapse__item-value">
-                                                            <span>
-                                                                {
-                                                                    topping.quantity
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        className="header-collapse__item"
-                                                        style={{ width: 250 }}
-                                                    >
-                                                        <div className="header-collapse__item-title">
-                                                            <span>Price</span>
-                                                        </div>
-                                                        <div className="header-collapse__item-value">
-                                                            <span>
-                                                                {
-                                                                    topping.totalPrice
-                                                                }{" "}
-                                                                $
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <Divider />
+                                                    )
+                                                )}
                                             </div>
-                                        ))
-                                    ) : (
-                                        <NoData title="No toppings have been placed" />
-                                    )}
-                                </Collapse.Panel>
-                            </Collapse>
-                        ))}
-                    </div>
-                </>
+                                        }
+                                        key={productOrder.id}
+                                    >
+                                        {productOrder.toppings.length ? (
+                                            productOrder.toppings.map(
+                                                (topping) => (
+                                                    <div key={topping.id}>
+                                                        <div className="flex">
+                                                            <div
+                                                                className="header-collapse__item"
+                                                                style={{
+                                                                    width: 250,
+                                                                }}
+                                                            >
+                                                                <div className="header-collapse__item-title">
+                                                                    <span>
+                                                                        Topping
+                                                                        Name
+                                                                    </span>
+                                                                </div>
+                                                                <div className="header-collapse__item-value">
+                                                                    <span>
+                                                                        {
+                                                                            topping
+                                                                                .Topping
+                                                                                .nameTopping
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                className="header-collapse__item"
+                                                                style={{
+                                                                    width: 250,
+                                                                }}
+                                                            >
+                                                                <div className="header-collapse__item-title">
+                                                                    <span>
+                                                                        Quantity
+                                                                    </span>
+                                                                </div>
+                                                                <div className="header-collapse__item-value">
+                                                                    <span>
+                                                                        {
+                                                                            topping.quantity
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                className="header-collapse__item"
+                                                                style={{
+                                                                    width: 250,
+                                                                }}
+                                                            >
+                                                                <div className="header-collapse__item-title">
+                                                                    <span>
+                                                                        Price
+                                                                    </span>
+                                                                </div>
+                                                                <div className="header-collapse__item-value">
+                                                                    <span>
+                                                                        {
+                                                                            topping.totalPrice
+                                                                        }{" "}
+                                                                        $
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <Divider />
+                                                    </div>
+                                                )
+                                            )
+                                        ) : (
+                                            <NoData title="No toppings have been placed" />
+                                        )}
+                                    </Collapse.Panel>
+                                </Collapse>
+                            ))}
+                        </div>
+                    </>
+                )
             )}
         </div>
     );
