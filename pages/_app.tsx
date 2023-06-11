@@ -14,34 +14,37 @@ import { selectCurrentUser } from "../auth/authSlice";
 import Main from "../components/_main";
 import { useRouter } from "next/router";
 
-
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      store.subscribe(() => {
-          const { auth } = store.getState();
-          const user = get(auth, "user");
-          const accessToken = get(auth, "token") || "";
-  
-          if (user && accessToken) {
-              localStorage.setItem(
-                  "currentUser",
-                  encodeAes(JSON.stringify(user), variables.cryptoAesKey)
-              );
-              localStorage.setItem(
-                  "accessToken",
-                  encodeAes(accessToken, variables.cryptoAesKey)
-              );
-          }
-      });
-  }
-  }, [])
-  return (
-      <Provider store={store}>
-          <Main Component={Component} pageProps={pageProps} />
-      </Provider>
-  )
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            store.subscribe(() => {
+                const { auth } = store.getState();
+                const user = get(auth, "user");
+                const accessToken = get(auth, "token") || "";
+                const refreshToken = get(auth, "refreshToken") || "";
+
+                if (user && accessToken) {
+                    localStorage.setItem(
+                        "currentUser",
+                        encodeAes(JSON.stringify(user), variables.cryptoAesKey)
+                    );
+                    localStorage.setItem(
+                        "accessToken",
+                        encodeAes(accessToken, variables.cryptoAesKey)
+                    );
+                    localStorage.setItem(
+                        "refreshToken",
+                        encodeAes(refreshToken, variables.cryptoAesKey)
+                    );
+                }
+            });
+        }
+    }, []);
+    return (
+        <Provider store={store}>
+            <Main Component={Component} pageProps={pageProps} />
+        </Provider>
+    );
 }
 
-export default MyApp
-
+export default MyApp;

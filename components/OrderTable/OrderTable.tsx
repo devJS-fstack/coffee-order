@@ -10,7 +10,7 @@ import moment from "moment";
 import { CheckboxValueType } from "antd/es/checkbox/Group";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 
-const cssStatus: any = {
+export const cssStatus: any = {
     CREATED: {
         css: {},
         status: "Created",

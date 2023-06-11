@@ -12,9 +12,14 @@ import { useState, Dispatch, SetStateAction, useEffect, memo } from "react";
 import { isEmpty } from "lodash";
 import { toast } from "react-toastify";
 import { UploadChangeParam } from "antd/es/upload";
-import { IVoucher } from "../../apis/voucher";
-import { disablePastDate } from "../../utils/helper";
+import {
+    IVoucher,
+    useCreateVoucherMutation,
+    useUpdateVoucherMutation,
+} from "../../apis/voucher";
+import { delay, disablePastDate } from "../../utils/helper";
 import { VOUCHER_TYPES } from "../../utils/variable";
+import dayjs, { Dayjs } from "dayjs";
 
 const VoucherAdminModal = ({
     isOpen,
@@ -36,6 +41,8 @@ const VoucherAdminModal = ({
     const handleOk = () => {
         form.submit();
     };
+    const [mCreateVoucher] = useCreateVoucherMutation();
+    const [mUpdateVoucher] = useUpdateVoucherMutation();
 
     const handleCancel = () => {
         setIsOpen(false);
@@ -49,12 +56,46 @@ const VoucherAdminModal = ({
     };
 
     const handleOnFinish = async () => {
-        const value = form.getFieldsValue();
-        console.log(value);
         if (!fileList.length) {
             toast.error("Please try to upload one image");
             return;
         }
+        setIsLoadingBtn(true);
+
+        const params = form.getFieldsValue();
+        const rangeDate = params.rangeDate as Dayjs[];
+        params.dateStart = rangeDate[0].format("YYYY-MM-DD");
+        params.dateExpired = rangeDate[1].format("YYYY-MM-DD");
+
+        const formData = new FormData();
+        Object.keys(params).forEach((key: any) =>
+            formData.append(key, params[key])
+        );
+        formData.append("image", fileList[0]?.originFileObj as Blob);
+        let message = "Create voucher successfully";
+        console.log(params);
+        await delay(500);
+        try {
+            if (isEdit) {
+                message = "Update voucher successfully";
+                await mUpdateVoucher({
+                    payload: formData,
+                    id: voucher?.id || 0,
+                }).unwrap();
+            } else {
+                await mCreateVoucher(formData).unwrap();
+            }
+        } catch (error: any) {
+            toast.error(
+                error?.data?.message || "Sorry. Some thing went wrong!"
+            );
+            setIsLoadingBtn(false);
+            return;
+        }
+        setIsLoadingBtn(false);
+        setIsOpen(false);
+        toast.success(message);
+        refetchData();
     };
 
     useEffect(() => {
@@ -62,9 +103,17 @@ const VoucherAdminModal = ({
             form.resetFields();
             if (isEdit && !isEmpty(voucher)) {
                 form.setFieldsValue({
-                    nameVoucher: voucher.nameVoucher,
-                    description: voucher.description,
+                    ...voucher,
+                    discount:
+                        voucher.type === VOUCHER_TYPES.PRICE_DISCOUNT
+                            ? voucher.priceDiscount
+                            : voucher.percentDiscount,
+                    rangeDate: [
+                        dayjs(voucher.dateStart),
+                        dayjs(voucher.dateExpired),
+                    ],
                 });
+                setTypeVoucher(voucher.type);
                 setFileList([
                     {
                         url: voucher.imageUrl,
@@ -154,6 +203,8 @@ const VoucherAdminModal = ({
                     <Select
                         onChange={(value) => {
                             setTypeVoucher(value);
+                            form.setFieldValue("maxDiscount", null);
+                            form.setFieldValue("discount", null);
                         }}
                         value={typeVoucher}
                         options={[
@@ -184,6 +235,13 @@ const VoucherAdminModal = ({
                         ]}
                     >
                         <InputNumber
+                            onChange={(value: any) => {
+                                if (
+                                    typeVoucher === VOUCHER_TYPES.PRICE_DISCOUNT
+                                ) {
+                                    form.setFieldValue("maxDiscount", value);
+                                }
+                            }}
                             className="w-full"
                             addonAfter={
                                 typeVoucher === VOUCHER_TYPES.PERCENT_DISCOUNT
@@ -205,7 +263,7 @@ const VoucherAdminModal = ({
                             },
                         ]}
                     >
-                        <InputNumber className="w-full" />
+                        <InputNumber className="w-full" addonAfter="$" />
                     </Form.Item>
                     <Form.Item
                         name="maxDiscount"
@@ -221,12 +279,18 @@ const VoucherAdminModal = ({
                             },
                         ]}
                     >
-                        <InputNumber className="w-full" />
+                        <InputNumber
+                            disabled={
+                                typeVoucher === VOUCHER_TYPES.PRICE_DISCOUNT
+                            }
+                            className="w-full"
+                            addonAfter="$"
+                        />
                     </Form.Item>
                 </div>
                 <Form.Item
-                    name="limitUser"
-                    label="Use Limit"
+                    name="limitUse"
+                    label="Limited Usage"
                     rules={[
                         {
                             required: true,

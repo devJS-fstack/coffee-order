@@ -16,7 +16,7 @@ import { toast } from "react-toastify";
 import ConfirmModal from "../ConfirmModal/ConfirmModal";
 import { isEmpty } from "lodash";
 
-const headerCollapse = [
+export const headerCollapse = [
     {
         title: "Product Name",
         key: "nameProduct",
@@ -61,6 +61,26 @@ const markByStatus: any = {
     IN_TRANSIT: "Received",
 };
 
+export const getProductOrderByKey = (
+    key: string,
+    productOrder: IResponseProductOrder
+) => {
+    switch (key) {
+        case "nameProduct":
+            return productOrder.nameProduct;
+        case "quantity":
+            return productOrder.quantity;
+        case "size":
+            return productOrder.size;
+        case "totalPrice":
+            return productOrder.totalPrice + " $";
+        case "totalTopping":
+            return productOrder.toppings.length;
+        default:
+            return "";
+    }
+};
+
 const OrderDetailAdmin = ({
     order,
     refetchData,
@@ -70,6 +90,7 @@ const OrderDetailAdmin = ({
     refetchData: any;
     isFetchingData: boolean;
 }) => {
+    console.log(order);
     const {
         status,
         created,
@@ -77,32 +98,12 @@ const OrderDetailAdmin = ({
         shipDate,
         receivedDate,
         processedDate,
+        plannedReceivedDate,
     } = order as IResponseOrders;
     const [isLoading, setIsLoading] = useState(false);
-    console.log(order?.plannedReceivedDate);
-    console.log(order?.receivedDate);
     const [isOpenConfirm, setIsOpenConfirm] = useState(false);
     const [isLoadingBtn, setIsLoadingBtn] = useState(false);
     const [mMarkStatusOrder] = useMarkStatusMutation();
-    const getProductOrderByKey = (
-        key: string,
-        productOrder: IResponseProductOrder
-    ) => {
-        switch (key) {
-            case "nameProduct":
-                return productOrder.nameProduct;
-            case "quantity":
-                return productOrder.quantity;
-            case "size":
-                return productOrder.size;
-            case "totalPrice":
-                return productOrder.totalPrice + " $";
-            case "totalTopping":
-                return productOrder.toppings.length;
-            default:
-                return "";
-        }
-    };
 
     const handleOnMarkStatus = async () => {
         setIsLoadingBtn(true);
@@ -277,11 +278,13 @@ const OrderDetailAdmin = ({
                                             <span>
                                                 {order.status ===
                                                 statusOrders.RECEIVED ? (
-                                                    moment(
-                                                        order.plannedReceivedDate
-                                                    ).isBefore(
-                                                        order.receivedDate
-                                                    ) ? (
+                                                    moment(plannedReceivedDate)
+                                                        .utc()
+                                                        .isAfter(
+                                                            moment(
+                                                                order.receivedDate
+                                                            ).utc()
+                                                        ) ? (
                                                         "Received"
                                                     ) : (
                                                         <span className="relative">
@@ -289,10 +292,12 @@ const OrderDetailAdmin = ({
                                                                 placement="topRight"
                                                                 className="icon-received__late"
                                                                 title={`Planned at ${moment(
-                                                                    order.plannedReceivedDate
-                                                                ).format(
-                                                                    "MMMM.DD.YYYY hh:mm A"
-                                                                )}`}
+                                                                    plannedReceivedDate
+                                                                )
+                                                                    .utc()
+                                                                    .format(
+                                                                        "MMMM.DD.YYYY hh:mm A"
+                                                                    )}`}
                                                             >
                                                                 <InfoCircleTwoTone />
                                                             </Tooltip>
@@ -320,9 +325,13 @@ const OrderDetailAdmin = ({
                                                 status === statusOrders.RECEIVED
                                                     ? moment(
                                                           order.plannedReceivedDate
-                                                      ).isBefore(
-                                                          order.receivedDate
                                                       )
+                                                          .utc()
+                                                          .isAfter(
+                                                              moment(
+                                                                  order.receivedDate
+                                                              ).utc()
+                                                          )
                                                         ? STEP_ICONS.RECEIVED
                                                         : STEP_ICONS.RECEIVED_LATE
                                                     : STEP_ICONS.RECEIVE

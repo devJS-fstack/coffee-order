@@ -65,7 +65,7 @@ export default function LoginComponent() {
         { data: voucherDiscount, isFetching: isFetchingDiscount },
     ] = useLazyDiscountQuery();
     const [productOrderCurr, setProductOrderCurr] = useState(
-        productOrders?.[0],
+        productOrders?.[0]
     );
 
     const [deliveryInfo, setDeliveryInfo] = useState({
@@ -185,7 +185,7 @@ export default function LoginComponent() {
     const handleOnPlaceOrder = async () => {
         const { fullAddress, date, time } = deliveryInfo;
         const formatDateTime = moment(`${date} ${time}`).format(
-            "YYYY-MM-DD HH:mm:ss",
+            "YYYY-MM-DD HH:mm:ss"
         );
         const { deliveryInstruction, name, phone } = form.getFieldsValue();
         setPlaceOrderObj({
@@ -516,7 +516,7 @@ export default function LoginComponent() {
                                                                     className="tch-order-card__icon flex items-center cursor-pointer"
                                                                     onClick={() => {
                                                                         handleOnEditProduct(
-                                                                            productOrder,
+                                                                            productOrder
                                                                         );
                                                                     }}
                                                                 >
@@ -545,14 +545,14 @@ export default function LoginComponent() {
                                                                     {productOrder.totalPrice +
                                                                         sumBy(
                                                                             productOrder.toppings,
-                                                                            "totalPrice",
+                                                                            "totalPrice"
                                                                         )}{" "}
                                                                     $
                                                                 </p>
                                                                 <DeleteFilled
                                                                     onClick={() =>
                                                                         handleOnClickDelete(
-                                                                            productOrder.id,
+                                                                            productOrder.id
                                                                         )
                                                                     }
                                                                     style={{
@@ -561,7 +561,7 @@ export default function LoginComponent() {
                                                                 />
                                                             </div>
                                                         </div>
-                                                    ),
+                                                    )
                                                 )
                                             ) : (
                                                 <CustomSpin
@@ -593,18 +593,18 @@ export default function LoginComponent() {
                                                             {productOrders?.reduce(
                                                                 (
                                                                     acc,
-                                                                    productOrder,
+                                                                    productOrder
                                                                 ) => {
                                                                     return (
                                                                         acc +
                                                                         productOrder.totalPrice +
                                                                         sumBy(
                                                                             productOrder.toppings,
-                                                                            "totalPrice",
+                                                                            "totalPrice"
                                                                         )
                                                                     );
                                                                 },
-                                                                0,
+                                                                0
                                                             )}{" "}
                                                             $
                                                         </p>
@@ -643,13 +643,14 @@ export default function LoginComponent() {
                                                         className="tch-order-card__left flex cursor-pointer items-center"
                                                         onClick={() =>
                                                             setIsOpenVoucher(
-                                                                true,
+                                                                true
                                                             )
                                                         }
                                                     >
                                                         <BsPencilFill className="tch-order-card__text orange mr-2" />
                                                         <p className="tch-order-card__text orange mb-0 font-medium">
-                                                            Voucher Discount
+                                                            {voucherCode ||
+                                                                "Voucher Discount"}
                                                         </p>
                                                     </div>
                                                     <div className="tch-order-card__right">

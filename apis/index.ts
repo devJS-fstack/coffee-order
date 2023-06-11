@@ -24,8 +24,11 @@ export const baseQuery = fetchBaseQuery({
     prepareHeaders: (headers: Headers, { getState }) => {
         const getCustomState = getState as any;
         const token = getCustomState()?.auth?.token;
+        const refreshToken = getCustomState()?.auth?.refreshToken;
+
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
+            headers.set("refreshToken", `Bearer ${refreshToken}`);
         }
         return headers;
     },
@@ -34,21 +37,21 @@ export const baseQuery = fetchBaseQuery({
 export const baseQueryReAuth = async (
     args: string | FetchArgs,
     api: BaseQueryApi,
-    extraOptions = {},
+    extraOptions = {}
 ) => {
     let result = await baseQuery(args, api, extraOptions);
     if (result?.error?.status === HTTP_STATUS_CODES.FORBIDDEN) {
         console.log("Sending refresh token");
         const refreshResult = await baseQuery(
-            "/refresh-token",
+            "users/refresh-token",
             api,
-            extraOptions,
+            extraOptions
         );
-        if (refreshResult?.data) {
+        const { accessToken, refreshToken } = refreshResult?.data as any;
+        if (accessToken && refreshToken) {
             const getCustomState = api.getState as any;
             const user = getCustomState()?.auth?.user;
-            const { accessToken } = refreshResult?.data as any;
-            api.dispatch(setCredentials({ user, accessToken }));
+            api.dispatch(setCredentials({ user, accessToken, refreshToken }));
             result = await baseQuery(args, api, extraOptions);
         } else {
             api.dispatch(logOut());

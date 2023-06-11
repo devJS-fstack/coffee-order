@@ -263,3 +263,58 @@ svg {
     position: absolute;
     right: -18px;
 }
+
+.tw-sm_heading_h5 {
+    font-family: "Nunito Sans";
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: 0px;
+    text-align: left;
+}
+
+.tw-sm_body_b1_reg {
+    font-family: "Nunito Sans";
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 0px;
+    text-align: left;
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128/var(--tw-text-opacity));
+}
+
+.btn-back {
+    background: var(--blue-500);
+    border-color: var(--blue-500);
+    color: #fff;
+    padding: 12px 16px;
+    height: 48px;
+}
+
+.btn-back span {
+    font-family: "Nunito Sans";
+    font-size: 16px;
+}
+
+.ant-btn-white {
+    color: var(--gray-800);
+    padding: 12px 16px;
+    height: 48px;
+    background: var(--gray-100);
+    border-color: var(--gray-100);
+    color: var(--gray-800);
+    border-radius: 12px !important;
+}
+
+.ant-btn-white span {
+    font-family: "Nunito Sans";
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.ant-btn-white:hover{
+    background: var(--gray-200);
+    border-color: var(--gray-200) !important;
+    color: var(--gray-800) !important;
+}

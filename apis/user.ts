@@ -18,6 +18,7 @@ export type IUser = {
     firstName?: string;
     lastName?: string;
     accessToken?: string;
+    refreshToken?: string;
     phoneNumber?: string;
     prefixPhone?: string;
     roleId?: number;
@@ -44,8 +45,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 const { data: user } = data || {};
                 if (user && user.accessToken) {
                     const accessToken = user.accessToken;
+                    const refreshToken = user.refreshToken as string | null;
                     delete user.accessToken;
-                    store.dispatch(setCredentials({ user, accessToken }));
+                    delete user.refreshToken;
+
+                    store.dispatch(
+                        setCredentials({ user, accessToken, refreshToken })
+                    );
                 } else {
                     store.dispatch(logOut());
                 }
@@ -69,8 +75,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 const { data: user } = data || {};
                 if (user && user.accessToken) {
                     const accessToken = user.accessToken;
+                    const refreshToken = user.refreshToken as string | null;
                     delete user.accessToken;
-                    store.dispatch(setCredentials({ user, accessToken }));
+                    delete user.refreshToken;
+
+                    store.dispatch(
+                        setCredentials({ user, accessToken, refreshToken })
+                    );
                 } else {
                     store.dispatch(logOut());
                 }

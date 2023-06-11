@@ -9,14 +9,22 @@ const currentAuth: any =
     typeof window !== "undefined"
         ? decodeAes(
               localStorage.getItem("accessToken") || {},
-              variables.cryptoAesKey,
+              variables.cryptoAesKey
           )
         : null;
 const currentUser: any =
     typeof window !== "undefined"
         ? decodeAes(
               localStorage.getItem("currentUser") || {},
-              variables.cryptoAesKey,
+              variables.cryptoAesKey
+          )
+        : null;
+
+const currentRefreshToken: any =
+    typeof window !== "undefined"
+        ? decodeAes(
+              localStorage.getItem("refreshToken") || {},
+              variables.cryptoAesKey
           )
         : null;
 
@@ -24,6 +32,7 @@ const initialState = {
     auth: {
         user: isJson(currentUser) ? JSON.parse(currentUser) : {},
         token: currentAuth || null,
+        refreshToken: currentRefreshToken,
     },
 };
 

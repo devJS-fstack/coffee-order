@@ -20,6 +20,7 @@ import { Badge } from "antd";
 import { useNewOrderQuery } from "../../apis/order";
 import { ROLES } from "../../utils/variable";
 import { AiOutlineUserAdd } from "react-icons/ai";
+import { GrUserAdmin } from "react-icons/gr";
 
 type Nav = {
     id: number;
@@ -57,7 +58,7 @@ function checkActiveNavMobile(isActive: boolean, theme: any) {
 export default function Header(props: React.HTMLProps<HTMLDivElement>) {
     const [nav, setNav] = useState(navigation);
     const currentUser = useSelector(selectCurrentUser);
-    const { data: orderDetail } = useNewOrderQuery({});
+    const { data: orderDetail, refetch: refetchOrder } = useNewOrderQuery({});
 
     const handleSwitchPage = (index: number) => {
         const stateNew: any = navigation.map((item, i) => {
@@ -71,12 +72,16 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
     const router = useRouter();
     const isAdmin = router.pathname.includes("administration");
     useEffect(() => {
+        if (isAdmin && currentUser?.Role?.role !== ROLES.SUPER_ADMIN) {
+            router.push("/page-not-found");
+        }
         const navNew: any = navigation.map((item) => {
             if (router.route === item.href) item.current = true;
             else item.current = false;
             return item;
         });
         setNav(navNew);
+        refetchOrder();
     }, [router.route]);
 
     const handleSignOut = () => {
@@ -87,7 +92,7 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
     return (
         <div className={isAdmin ? "hidden" : ""}>
             <Head>
-                <title>My Fullstack Blog</title>
+                <title>The Coffee House</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
                     rel="preconnect"
@@ -155,10 +160,10 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                     className={classNames(
                                                         checkActiveNavbar(
                                                             item.current,
-                                                            "",
+                                                            ""
                                                         ),
                                                         "px-3 pt-1 text-sm font-medium",
-                                                        item.current || "false",
+                                                        item.current || "false"
                                                     )}
                                                     aria-current={
                                                         item.current
@@ -212,14 +217,14 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                                 <div
                                                                     onClick={() =>
                                                                         router.push(
-                                                                            "/my-account",
+                                                                            "/my-account"
                                                                         )
                                                                     }
                                                                     className={classNames(
                                                                         active
                                                                             ? "bg-gray-100"
                                                                             : "",
-                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer",
+                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer"
                                                                     )}
                                                                 >
                                                                     <UserOutlined className="mr-2" />
@@ -227,6 +232,34 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                                 </div>
                                                             )}
                                                         </Menu.Item>
+                                                        {currentUser.Role
+                                                            ?.role ===
+                                                            ROLES.SUPER_ADMIN && (
+                                                            <Menu.Item>
+                                                                {({
+                                                                    active,
+                                                                }: any) => (
+                                                                    <div
+                                                                        onClick={() =>
+                                                                            router.push(
+                                                                                "/administration"
+                                                                            )
+                                                                        }
+                                                                        className={classNames(
+                                                                            active
+                                                                                ? "bg-gray-100"
+                                                                                : "",
+                                                                            "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer"
+                                                                        )}
+                                                                    >
+                                                                        <GrUserAdmin className="mr-2" />
+                                                                        <span>
+                                                                            Administration
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </Menu.Item>
+                                                        )}
                                                         <Menu.Item>
                                                             {({
                                                                 active,
@@ -234,14 +267,14 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                                 <div
                                                                     onClick={() =>
                                                                         router.push(
-                                                                            "/order-history",
+                                                                            "/order-history"
                                                                         )
                                                                     }
                                                                     className={classNames(
                                                                         active
                                                                             ? "bg-gray-100"
                                                                             : "",
-                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer",
+                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer"
                                                                     )}
                                                                 >
                                                                     <FieldTimeOutlined className="mr-2" />
@@ -261,7 +294,7 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                                         active
                                                                             ? "bg-gray-100"
                                                                             : "",
-                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer",
+                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer"
                                                                     )}
                                                                     onClick={
                                                                         handleSignOut
@@ -286,11 +319,11 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                                         active
                                                                             ? "bg-gray-100"
                                                                             : "",
-                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer",
+                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer"
                                                                     )}
                                                                     onClick={() => {
                                                                         router.push(
-                                                                            "sign-in",
+                                                                            "/sign-in"
                                                                         );
                                                                     }}
                                                                 >
@@ -310,11 +343,11 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                                                         active
                                                                             ? "bg-gray-100"
                                                                             : "",
-                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer",
+                                                                        "flex justify-start items-center px-4 py-2 text-sm text-gray-700 cursor-pointer"
                                                                     )}
                                                                     onClick={() => {
                                                                         router.push(
-                                                                            "sign-up",
+                                                                            "/sign-up"
                                                                         );
                                                                     }}
                                                                 >
@@ -375,9 +408,9 @@ export default function Header(props: React.HTMLProps<HTMLDivElement>) {
                                             className={classNames(
                                                 checkActiveNavMobile(
                                                     item.current,
-                                                    "",
+                                                    ""
                                                 ),
-                                                "block px-3 py-2 rounded-md text-base font-medium",
+                                                "block px-3 py-2 rounded-md text-base font-medium"
                                             )}
                                             aria-current={
                                                 item.current

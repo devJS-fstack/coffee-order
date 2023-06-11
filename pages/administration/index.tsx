@@ -4,11 +4,13 @@ import UserPage from "./users";
 import ProductAdmin from "./service/product";
 import CustomSpin from "../../components/Spin";
 import { delay } from "../../utils/helper";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import CategoryAdmin from "./service/category";
 import ToppingAdmin from "./service/topping";
 import OrderAdmin from "./order";
 import VoucherAdmin from "./voucher";
+import { useNumberPlacedOrderQuery } from "../../apis/order";
+import { socket } from "../../utils/socket";
 
 const components = (key: string, args: any) => {
     switch (key) {
@@ -35,12 +37,43 @@ const Admin = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [page, setPage] = useState("user");
     const [isLoading, setIsLoading] = useState(false);
+    const [isConnected, setIsConnected] = useState(socket.connected);
     useEffect(() => {
         setIsLoading(true);
         delay(500).then(() => {
             setIsLoading(false);
         });
     }, [page]);
+
+    const { data: countPlacedOrder, refetch: refetchCountPlacedOrder } =
+        useNumberPlacedOrderQuery({}, { refetchOnMountOrArgChange: true });
+
+    useEffect(() => {
+        function onConnect() {
+            setIsConnected(true);
+        }
+
+        function onDisconnect() {
+            setIsConnected(false);
+        }
+
+        function onListenMessage(message: string) {
+            toast.info("You just received a new order.", {
+                position: "top-right",
+            });
+            refetchCountPlacedOrder();
+        }
+
+        socket.on("connect", onConnect);
+        socket.on("disconnect", onDisconnect);
+        socket.on("chat message", onListenMessage);
+
+        return () => {
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
+            socket.off("chat message", onListenMessage);
+        };
+    }, []);
 
     return (
         <div className="flex overflow-hidden h-screen">
@@ -62,8 +95,18 @@ const Admin = () => {
                 setCollapsed={setCollapsed}
                 setPage={setPage}
                 setIsLoading={setIsLoading}
+                refetchCountPlacedOrder={refetchCountPlacedOrder}
+                countPlacedOrder={countPlacedOrder}
             />
-            {isLoading ? <CustomSpin /> : components(page, { collapsed })}
+            {isLoading ? (
+                <CustomSpin />
+            ) : (
+                components(page, {
+                    collapsed,
+                    refetchCountPlacedOrder,
+                    countPlacedOrder,
+                })
+            )}
         </div>
     );
 };

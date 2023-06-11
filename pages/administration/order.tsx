@@ -11,7 +11,13 @@ import OrderDetailAdmin from "../../components/OrderDetailAdmin/OrderDetailAdmin
 import CustomSpin from "../../components/Spin";
 import { isEmpty } from "lodash";
 
-const OrderAdmin = ({}: {}) => {
+const OrderAdmin = ({
+    refetchCountPlacedOrder,
+    countPlacedOrder,
+}: {
+    refetchCountPlacedOrder: any;
+    countPlacedOrder: number;
+}) => {
     const [
         refetchOrders,
         {
@@ -29,11 +35,14 @@ const OrderAdmin = ({}: {}) => {
                   ...orders?.find((order) => order.id === orderCurrent.id),
               };
         setOrderCurrent(orderSet as IResponseOrders);
+        if (refetchCountPlacedOrder) {
+            refetchCountPlacedOrder();
+        }
     }, [isFetchingOrder]);
 
     useEffect(() => {
         refetchOrders({});
-    }, []);
+    }, [countPlacedOrder]);
 
     return (
         <div

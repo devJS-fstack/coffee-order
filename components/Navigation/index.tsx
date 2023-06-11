@@ -48,21 +48,21 @@ const NavigationAdmin = ({
     setCollapsed,
     setPage,
     setIsLoading,
+    refetchCountPlacedOrder,
+    countPlacedOrder,
 }: {
     collapsed: boolean;
     setCollapsed: Dispatch<SetStateAction<boolean>>;
     setPage: Dispatch<SetStateAction<string>>;
     setIsLoading: Dispatch<SetStateAction<boolean>>;
+    refetchCountPlacedOrder: any;
+    countPlacedOrder?: number;
 }) => {
     const router = useRouter();
     const handleChangePage = (key: string) => {
         setPage(key);
         refetchCountPlacedOrder();
     };
-    const { data: countPlacedOrder, refetch: refetchCountPlacedOrder } =
-        useNumberPlacedOrderQuery({});
-
-    console.log(countPlacedOrder);
     const handleSignOut = () => {
         setIsLoading(true);
         delay(1000).then(() => {
